@@ -1,0 +1,732 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mogno Brechó | Curadoria Contemporânea & Alma de Mogno</title>
+  
+  <!-- Fontes do Google -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,400&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Caveat:wght@500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- Folha de Estilos Principal -->
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+  <!-- CABEÇALHO / NAVBAR GLASSMORPHIC -->
+  <header class="site-header">
+    <div class="container header-inner">
+      <!-- Marca / Logo -->
+      <a href="#" class="brand-logo" title="Mogno Brechó Home">
+        <span class="brand-title">MOGNO<span class="accent-dot"></span></span>
+        <span class="brand-tagline">brechó & maresia</span>
+      </a>
+
+      <!-- Menu de Navegação -->
+      <nav class="site-nav" id="site-nav" aria-label="Navegação Principal">
+        <ul class="nav-links">
+          <li><a href="#catalogo" class="nav-link active">Araras & Peças</a></li>
+          <li><a href="#manifesto" class="nav-link">Manifesto</a></li>
+          <li><a href="#diferenciais" class="nav-link">Sustentabilidade</a></li>
+          <li><a href="#rodape" class="nav-link">Contato</a></li>
+        </ul>
+      </nav>
+
+      <!-- Ações do Cabeçalho -->
+      <div class="header-actions">
+        <!-- Alternador entre Modo Loja e Modo Admin -->
+        <div class="view-switcher" role="tablist" aria-label="Alternar Visão">
+          <button id="btn-view-store" class="switch-btn active" title="Ver Vitrine da Loja">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+            <span class="switch-label">Loja</span>
+          </button>
+          <button id="btn-view-admin" class="switch-btn admin-btn" title="Acessar Painel de Controle" style="display: none;">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+            <span class="switch-label">Painel Admin</span>
+          </button>
+        </div>
+
+        <!-- Botão Sacola de Compras -->
+        <button id="cart-trigger-btn" class="cart-trigger-btn" aria-label="Abrir Sacola">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 0 1-8 0"></path></svg>
+          <span id="cart-badge-count" class="cart-badge-count" style="display: none;">0</span>
+        </button>
+
+        <!-- Botão Hambúrguer (aparece só no mobile) -->
+        <button id="btn-mobile-menu-toggle" class="mobile-menu-toggle" aria-label="Abrir menu" aria-expanded="false" aria-controls="site-nav">
+          <svg class="icon-menu-bars" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+          <svg class="icon-menu-close" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="display:none;"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Fundo esmaecido atrás do menu mobile aberto -->
+    <div id="mobile-nav-backdrop" class="mobile-nav-backdrop"></div>
+  </header>
+
+  <!-- =========================================================================
+       VISÃO 1: VITRINE DA LOJA (ÁREA DO CLIENTE)
+       ========================================================================= -->
+  <main id="store-view">
+
+    <!-- HERO SECTION EDITORIAL -->
+    <section class="hero-editorial">
+      <div class="container hero-grid">
+        <div class="hero-text-content">
+          <div class="hero-pill-badge">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M2 12c2-4 4-4 6 0s4 4 6 0 4-4 6 0"></path><path d="M2 18c2-4 4-4 6 0s4 4 6 0 4-4 6 0"></path></svg>
+            Coleção Cápsula • Maresia & Madeira
+          </div>
+          <h1 class="hero-title">
+            Peças raras com a alma crua do <em>mogno e da maresia</em>.
+          </h1>
+          <p class="hero-desc">
+            Um acervo garimpado peça a peça, com o cheiro de sal, prancha e memória analógica. Tons de madeira mogno, linho vivido e alfaiataria fluída que já têm história pra contar — e ganham a sua a partir de agora.
+          </p>
+          <div class="hero-actions">
+            <a href="#catalogo" class="btn-primary">
+              Explorar Araras
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+            </a>
+            <a href="#manifesto" class="btn-secondary">Nosso Manifesto</a>
+          </div>
+        </div>
+
+        <!-- Mosaico de Imagens Fotográficas -->
+        <div class="hero-visual-collage">
+          <div class="collage-card-main">
+            <img src="https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&w=1000&q=80" alt="Moda contemporânea e linho praiano">
+          </div>
+          <div class="collage-card-sub">
+            <img src="https://images.unsplash.com/photo-1595777457583-95e059d581b8?auto=format&fit=crop&w=600&q=80" alt="Vestido em linho cru">
+          </div>
+          <div class="hero-floating-tag">
+            <div class="floating-icon">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M2 8c1.8-3 3.6-3 5.4 0s3.6 3 5.4 0 3.6-3 5.4 0 3.6 3 5.4 0"></path><path d="M2 15c1.8-3 3.6-3 5.4 0s3.6 3 5.4 0 3.6-3 5.4 0 3.6 3 5.4 0"></path></svg>
+            </div>
+            <div class="floating-text">
+              <h5>Acervo 100% Autêntico</h5>
+              <p>Garimpado, higienizado e com história pra contar</p>
+            </div>
+          </div>
+
+          <div class="hero-wood-stamp" aria-hidden="true">
+            peça<br>única
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- FAIXA DE DIFERENCIAIS DA MARCA -->
+    <section class="perks-strip" id="diferenciais">
+      <div class="container perks-grid">
+        <div class="perk-item">
+          <div class="perk-icon-wrap">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+          </div>
+          <div>
+            <h4>Peças Únicas & Raras</h4>
+            <p>Apenas uma unidade por peça. Exclusividade real.</p>
+          </div>
+        </div>
+
+        <div class="perk-item">
+          <div class="perk-icon-wrap">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"></path></svg>
+          </div>
+          <div>
+            <h4>Fibras Nobres & Linho</h4>
+            <p>Priorizamos tecidos orgânicos que respiram com o sol.</p>
+          </div>
+        </div>
+
+        <div class="perk-item">
+          <div class="perk-icon-wrap">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path></svg>
+          </div>
+          <div>
+            <h4>Moda Circular Sustentável</h4>
+            <p>Prolongamos ciclos de vida com curadoria de luxo.</p>
+          </div>
+        </div>
+
+        <div class="perk-item">
+          <div class="perk-icon-wrap">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+          </div>
+          <div>
+            <h4>Reserva pelo WhatsApp</h4>
+            <p>Atendimento humanizado com fotos e medidas ao vivo.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CATÁLOGO / ARARAS DO BRECHÓ -->
+    <section class="catalog-section" id="catalogo">
+      <div class="container">
+        <div class="section-header-row">
+          <span class="section-subtitle-tag">Acervo Selecionado</span>
+          <h2 class="section-main-title">Araras Disponíveis</h2>
+        </div>
+
+        <!-- Barra de Filtros & Controles -->
+        <div class="filters-bar-wrapper">
+          <div class="filters-top-row">
+            <!-- Categorias -->
+            <div class="category-pills" role="tablist">
+              <button class="pill-filter active" data-category="todos">Todas as Peças</button>
+              <button class="pill-filter" data-category="vestidos">Vestidos & Saias</button>
+              <button class="pill-filter" data-category="camisas">Camisas de Linho</button>
+              <button class="pill-filter" data-category="alfaiataria">Alfaiataria</button>
+              <button class="pill-filter" data-category="praia">Praia & Balneário</button>
+              <button class="pill-filter" data-category="acessorios">Acessórios</button>
+            </div>
+
+            <!-- Busca & Ordenação -->
+            <div class="search-and-sort">
+              <div class="search-box">
+                <svg class="search-icon-svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                <input type="text" id="search-products-input" placeholder="Buscar por linho, Zara, Farm...">
+              </div>
+
+              <div class="select-filter-wrap">
+                <select id="sort-products-select" aria-label="Ordenar produtos">
+                  <option value="recent">Recém-chegados</option>
+                  <option value="price-asc">Menor Preço</option>
+                  <option value="price-desc">Maior Preço</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <!-- Filtros Refinados: Tamanho e Estado -->
+          <div class="filters-secondary-row">
+            <div class="sub-filter-group">
+              <span class="sub-filter-label">Tamanho:</span>
+              <button class="tag-filter tag-size-filter active" data-size="todos">Todos</button>
+              <button class="tag-filter tag-size-filter" data-size="PP">PP</button>
+              <button class="tag-filter tag-size-filter" data-size="P">P</button>
+              <button class="tag-filter tag-size-filter" data-size="M">M</button>
+              <button class="tag-filter tag-size-filter" data-size="G">G</button>
+              <button class="tag-filter tag-size-filter" data-size="GG">GG</button>
+              <button class="tag-filter tag-size-filter" data-size="Único">Único</button>
+            </div>
+
+            <div class="sub-filter-group">
+              <span class="sub-filter-label">Estado:</span>
+              <button class="tag-filter tag-condition-filter active" data-condition="todos">Todos</button>
+              <button class="tag-filter tag-condition-filter" data-condition="Como Novo">Como Novo</button>
+              <button class="tag-filter tag-condition-filter" data-condition="Impecável">Impecável</button>
+              <button class="tag-filter tag-condition-filter" data-condition="Raridade Vintage">Vintage Raro</button>
+              <button class="tag-filter tag-condition-filter" data-condition="Novo com Etiqueta">Com Etiqueta</button>
+            </div>
+
+            <div class="catalog-counter-text" id="catalog-counter">
+              Carregando peças...
+            </div>
+          </div>
+        </div>
+
+        <!-- Grid de Cards de Roupas -->
+        <div class="products-grid" id="products-grid">
+          <!-- Renderizado dinamicamente pelo app.js -->
+        </div>
+      </div>
+    </section>
+
+    <!-- MANIFESTO SUSTENTÁVEL / VIBE NATUREZA & PRAIA -->
+    <section class="manifesto-section" id="manifesto">
+      <div class="container manifesto-grid">
+        <div class="manifesto-text-block">
+          <span class="manifesto-tag">Slow Fashion & Maresia</span>
+          <h2 class="manifesto-title">A roupa mais sustentável é aquela que já existe.</h2>
+          <p class="manifesto-p">
+            Nascemos do fascínio pela madeira de mogno, pela brisa do mar e pelas tramas cruas de linho e algodão. O <strong>Mogno Brechó</strong> celebra o luxo despretensioso: peças com história, textura e memória — feitas pra durar através de verões, viagens e histórias contadas na prancha ou na varanda.
+          </p>
+
+          <div class="manifesto-pillars">
+            <div class="pillar-card">
+              <h4>Garimpo Criterioso</h4>
+              <p>Cada peça passa por vistoria rigorosa de costura, botões e fibras nobres.</p>
+            </div>
+            <div class="pillar-card">
+              <h4>Amor pelo Oceano</h4>
+              <p>Evitamos o consumo desenfreado da indústria têxtil, protegendo nossas águas.</p>
+            </div>
+            <div class="pillar-card">
+              <h4>Tons de Mogno & Terra</h4>
+              <p>Estética crua inspirada na madeira, na fumaça e na areia molhada da maré.</p>
+            </div>
+            <div class="pillar-card">
+              <h4>Exclusividade Singular</h4>
+              <p>Peças únicas: nenhuma outra pessoa terá exatamente a mesma roupa que você.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="manifesto-image-wrap">
+          <img src="https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1200&q=80" alt="Praia serena com areia dourada e mar azul">
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- =========================================================================
+       VISÃO 2: ABA PRÓPRIA PARA ADMINS (PAINEL DO CURADOR)
+       ========================================================================= -->
+  <section id="admin-view" class="admin-view-container" aria-label="Painel Administrativo">
+    <div class="container">
+      
+      <!-- Top Banner Admin -->
+      <div class="admin-header-banner">
+        <div class="admin-title-area">
+          <h2>Painel de Curadoria & Administração</h2>
+          <p>Adicione novas peças ao acervo ou marque peças vendidas com apenas um clique.</p>
+        </div>
+        <div class="admin-quick-actions-top">
+          <button id="btn-lock-admin" class="btn-admin-pill btn-reset" title="Trancar o acesso admin neste dispositivo">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+            Trancar Acesso
+          </button>
+          <button id="btn-reset-catalog" class="btn-admin-pill btn-reset" title="Voltar ao catálogo original curado">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path></svg>
+            Restaurar Catálogo Padrão
+          </button>
+        </div>
+      </div>
+
+      <!-- Métricas em Tempo Real -->
+      <div class="admin-metrics-grid">
+        <div class="metric-card">
+          <div class="metric-icon-wrap metric-orange">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path><line x1="3" y1="6" x2="21" y2="6"></line></svg>
+          </div>
+          <div class="metric-info">
+            <h4>Total no Acervo</h4>
+            <div class="metric-value" id="metric-total-items">0</div>
+          </div>
+        </div>
+
+        <div class="metric-card">
+          <div class="metric-icon-wrap metric-green">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
+          </div>
+          <div class="metric-info">
+            <h4>Disponíveis na Loja</h4>
+            <div class="metric-value" id="metric-available-items">0</div>
+          </div>
+        </div>
+
+        <div class="metric-card">
+          <div class="metric-icon-wrap metric-red">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+          </div>
+          <div class="metric-info">
+            <h4>Peças Vendidas</h4>
+            <div class="metric-value" id="metric-sold-items">0</div>
+          </div>
+        </div>
+
+        <div class="metric-card">
+          <div class="metric-icon-wrap metric-gold">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+          </div>
+          <div class="metric-info">
+            <h4>Estoque em Vitrine</h4>
+            <div class="metric-value" id="metric-total-value">R$ 0,00</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Workspace do Admin: Formulário à esquerda + Lista de Gerenciamento à direita -->
+      <div class="admin-workspace-grid">
+
+        <!-- Formulário: Adicionar Nova Peça -->
+        <div class="admin-form-panel">
+          <h3 class="admin-panel-title">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color: var(--c-magno-primary);"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="16"></line><line x1="8" y1="12" x2="16" y2="12"></line></svg>
+            Cadastrar Nova Roupa
+          </h3>
+          <p class="admin-panel-desc">Preencha as informações para publicar uma nova peça única no catálogo.</p>
+
+          <form id="add-product-form">
+            <div class="form-group">
+              <label class="form-label" for="prod-title">Título da Peça *</label>
+              <input type="text" id="prod-title" class="form-input" placeholder="Ex: Vestido Midi em Linho Areia" required>
+            </div>
+
+            <div class="form-row-2">
+              <div class="form-group">
+                <label class="form-label" for="prod-category">Categoria *</label>
+                <select id="prod-category" class="form-select" required>
+                  <option value="vestidos">Vestidos & Saias</option>
+                  <option value="camisas">Camisas de Linho</option>
+                  <option value="alfaiataria">Alfaiataria</option>
+                  <option value="praia">Praia & Balneário</option>
+                  <option value="acessorios">Acessórios</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="prod-size">Tamanho *</label>
+                <select id="prod-size" class="form-select" required>
+                  <option value="PP">PP (34)</option>
+                  <option value="P">P (36-38)</option>
+                  <option value="M" selected>M (40)</option>
+                  <option value="G">G (42-44)</option>
+                  <option value="GG">GG (46+)</option>
+                  <option value="Único">Tamanho Único</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-row-2">
+              <div class="form-group">
+                <label class="form-label" for="prod-price">Preço do Brechó (R$) *</label>
+                <input type="number" id="prod-price" class="form-input" placeholder="Ex: 180" step="0.01" min="1" required>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="prod-original-price">Preço Original de Loja (R$)</label>
+                <input type="number" id="prod-original-price" class="form-input" placeholder="Ex: 450" step="0.01">
+              </div>
+            </div>
+
+            <div class="form-row-2">
+              <div class="form-group">
+                <label class="form-label" for="prod-brand">Marca de Origem</label>
+                <input type="text" id="prod-brand" class="form-input" placeholder="Ex: Farm, Zara, Osklen">
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="prod-condition">Estado da Peça</label>
+                <select id="prod-condition" class="form-select">
+                  <option value="Como Novo">Como Novo</option>
+                  <option value="Impecável" selected>Impecável</option>
+                  <option value="Raridade Vintage">Raridade Vintage</option>
+                  <option value="Novo com Etiqueta">Novo com Etiqueta</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="prod-material">Tecido & Composição</label>
+              <input type="text" id="prod-material" class="form-input" placeholder="Ex: 100% Linho puro, Chiffon de Seda">
+            </div>
+
+            <div class="form-row-2">
+              <div class="form-group">
+                <label class="form-label" for="prod-vibe">Vibe / Tag da Peça</label>
+                <input type="text" id="prod-vibe" class="form-input" placeholder="Ex: Maresia & Mogno, Vintage Cru">
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="prod-badge">Selo em Destaque</label>
+                <input type="text" id="prod-badge" class="form-input" placeholder="Ex: Peça Única, 100% Linho">
+              </div>
+            </div>
+
+            <!-- Imagem da Roupa -->
+            <div class="form-group">
+              <label class="form-label" for="prod-image-url">URL da Foto da Peça *</label>
+              <input type="url" id="prod-image-url" class="form-input" placeholder="https://exemplo.com/foto.jpg" required>
+              
+              <div class="preset-pills-label">Ou escolha uma foto de demonstração de alta qualidade:</div>
+              <div class="preset-images-strip">
+                <button type="button" class="preset-btn" data-url="https://images.unsplash.com/photo-1496747611176-843222e1e57c?auto=format&fit=crop&w=1000&q=80">Linho Areia</button>
+                <button type="button" class="preset-btn" data-url="https://images.unsplash.com/photo-1598033129183-c4f50c736f10?auto=format&fit=crop&w=1000&q=80">Camisa Bege</button>
+                <button type="button" class="preset-btn" data-url="https://images.unsplash.com/photo-1572804013309-59a88b7e92f1?auto=format&fit=crop&w=1000&q=80">Vestido Floral</button>
+                <button type="button" class="preset-btn" data-url="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=1000&q=80">Terracota</button>
+                <button type="button" class="preset-btn" data-url="https://images.unsplash.com/photo-1548036328-c9fa89d128fa?auto=format&fit=crop&w=1000&q=80">Bolsa Palha</button>
+              </div>
+
+              <div style="margin-top: 8px;">
+                <label class="form-label" style="font-size: 0.75rem;">Ou selecione uma foto do seu computador:</label>
+                <input type="file" id="prod-image-file" accept="image/*" class="form-input" style="padding: 6px;">
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="prod-measurements">Medidas (opcional)</label>
+              <input type="text" id="prod-measurements" class="form-input" placeholder="Ex: Busto: 92cm | Cintura: 76cm | Comprimento: 110cm">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="prod-desc">Descrição Detalhada</label>
+              <textarea id="prod-desc" class="form-textarea" rows="3" placeholder="Conte a história da peça, caimento, detalhes e ocasiões de uso..."></textarea>
+            </div>
+
+            <button type="submit" class="form-submit-btn">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+              Publicar Peça na Vitrine
+            </button>
+          </form>
+        </div>
+
+        <!-- Tabela / Lista de Gestão do Acervo -->
+        <div class="admin-table-panel">
+          <div class="admin-list-header">
+            <div>
+              <h3 class="admin-panel-title">Peças no Catálogo</h3>
+              <p style="font-size: 0.85rem; color: var(--c-charcoal-500);">Clique para marcar como vendida, reativar ou excluir.</p>
+            </div>
+
+            <div class="admin-status-tabs">
+              <button class="admin-status-tab active" data-status="todos">Todas</button>
+              <button class="admin-status-tab" data-status="disponivel">Disponíveis</button>
+              <button class="admin-status-tab" data-status="vendido">Vendidas</button>
+            </div>
+          </div>
+
+          <!-- Lista de Peças Cadastradas -->
+          <div class="admin-items-list" id="admin-items-list">
+            <!-- Renderizado dinamicamente pelo app.js -->
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- =========================================================================
+       DRAWER DA SACOLA DE COMPRAS (OFF-CANVAS)
+       ========================================================================= -->
+  <div id="cart-drawer-overlay" class="cart-drawer-overlay">
+    <div class="cart-drawer">
+      <div class="cart-drawer-header">
+        <h3 class="cart-drawer-title">Sua Sacola</h3>
+        <button id="btn-close-cart" class="btn-close-drawer" aria-label="Fechar Sacola">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
+      </div>
+
+      <div class="cart-items-body" id="cart-items-body">
+        <!-- Renderizado dinamicamente -->
+      </div>
+
+      <div class="cart-drawer-footer">
+        <div class="cart-subtotal-row">
+          <span>Subtotal:</span>
+          <span class="cart-subtotal-val" id="cart-subtotal">R$ 0,00</span>
+        </div>
+        <p class="cart-shipping-notice">🌱 Peças únicas. Finalize direto pelo WhatsApp para garantir a reserva imediata.</p>
+        <button id="btn-whatsapp-checkout" class="btn-whatsapp-checkout">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.582 2.128 2.182-.573c.978.58 1.911.928 3.145.929 3.178 0 5.767-2.587 5.768-5.766.001-3.187-2.575-5.771-5.764-5.771zm3.392 8.244c-.144.405-.837.774-1.17.824-.299.045-.677.063-1.092-.069-.252-.08-.575-.187-.988-.365-1.739-.751-2.874-2.502-2.961-2.617-.087-.116-.708-.94-.708-1.793s.448-1.273.607-1.446c.159-.173.346-.217.462-.217l.332.006c.106.005.249-.04.39.298.144.347.491 1.2.534 1.287.043.087.072.188.014.304-.058.116-.087.188-.173.289l-.26.304c-.087.086-.177.18-.076.354.101.174.449.741.964 1.201.662.591 1.221.774 1.394.86.173.086.275.072.376-.044.101-.116.433-.506.549-.68.116-.173.231-.145.39-.087s1.011.477 1.184.564.289.13.332.202c.045.072.045.419-.099.824zm-3.423-14.416c-6.627 0-12 5.373-12 12 0 2.152.569 4.173 1.56 5.922l-1.657 6.057 6.223-1.633c1.704.928 3.659 1.454 5.741 1.454 6.627 0 12-5.373 12-12 0-6.627-5.373-12-12-12z"/></svg>
+          Reservar Peças no WhatsApp
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- =========================================================================
+       MODAL DE DETALHES DO PRODUTO (QUICK VIEW)
+       ========================================================================= -->
+  <div id="product-detail-modal" class="modal-backdrop">
+    <div class="modal-card-detail">
+      <button id="btn-close-detail-modal" class="modal-close-btn" aria-label="Fechar Detalhes">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+      </button>
+
+      <div id="detail-modal-body" style="display: contents;">
+        <!-- Preenchido via app.js -->
+      </div>
+    </div>
+  </div>
+
+  <!-- =========================================================================
+       MODAL DE EDIÇÃO DE PEÇA (ADMIN)
+       ========================================================================= -->
+  <div id="product-edit-modal" class="modal-backdrop">
+    <div class="edit-modal-card">
+      <button id="btn-close-edit-modal" class="modal-close-btn" aria-label="Fechar Edição">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+      </button>
+
+      <h3 class="admin-panel-title" style="margin-bottom: 20px;">Editar Informações da Peça</h3>
+
+      <form id="edit-product-form">
+        <div class="form-group">
+          <label class="form-label" for="edit-prod-title">Título da Peça</label>
+          <input type="text" id="edit-prod-title" class="form-input" required>
+        </div>
+
+        <div class="form-row-2">
+          <div class="form-group">
+            <label class="form-label" for="edit-prod-category">Categoria</label>
+            <select id="edit-prod-category" class="form-select">
+              <option value="vestidos">Vestidos & Saias</option>
+              <option value="camisas">Camisas de Linho</option>
+              <option value="alfaiataria">Alfaiataria</option>
+              <option value="praia">Praia & Balneário</option>
+              <option value="acessorios">Acessórios</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="edit-prod-size">Tamanho</label>
+            <select id="edit-prod-size" class="form-select">
+              <option value="PP">PP</option>
+              <option value="P">P</option>
+              <option value="M">M</option>
+              <option value="G">G</option>
+              <option value="GG">GG</option>
+              <option value="Único">Único</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-row-2">
+          <div class="form-group">
+            <label class="form-label" for="edit-prod-price">Preço Brechó (R$)</label>
+            <input type="number" id="edit-prod-price" class="form-input" step="0.01" required>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="edit-prod-original-price">Preço Original (R$)</label>
+            <input type="number" id="edit-prod-original-price" class="form-input" step="0.01">
+          </div>
+        </div>
+
+        <div class="form-row-2">
+          <div class="form-group">
+            <label class="form-label" for="edit-prod-status">Status da Peça</label>
+            <select id="edit-prod-status" class="form-select">
+              <option value="disponivel">Disponível na Loja</option>
+              <option value="vendido">Vendido / Esgotado</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="edit-prod-condition">Estado</label>
+            <select id="edit-prod-condition" class="form-select">
+              <option value="Como Novo">Como Novo</option>
+              <option value="Impecável">Impecável</option>
+              <option value="Raridade Vintage">Raridade Vintage</option>
+              <option value="Novo com Etiqueta">Novo com Etiqueta</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-row-2">
+          <div class="form-group">
+            <label class="form-label" for="edit-prod-brand">Marca</label>
+            <input type="text" id="edit-prod-brand" class="form-input">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="edit-prod-material">Tecido / Material</label>
+            <input type="text" id="edit-prod-material" class="form-input">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="edit-prod-vibe">Vibe / Tag</label>
+          <input type="text" id="edit-prod-vibe" class="form-input">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="edit-prod-image-url">URL da Foto</label>
+          <input type="url" id="edit-prod-image-url" class="form-input" required>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="edit-prod-measurements">Medidas</label>
+          <input type="text" id="edit-prod-measurements" class="form-input">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="edit-prod-desc">Descrição</label>
+          <textarea id="edit-prod-desc" class="form-textarea" rows="3"></textarea>
+        </div>
+
+        <button type="submit" class="form-submit-btn">Salvar Alterações</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- CONTAINER DE NOTIFICAÇÕES TOAST -->
+  <div id="toast-container" class="toast-container"></div>
+
+  <!-- RODAPÉ INSTITUCIONAL -->
+  <footer class="site-footer" id="rodape">
+    <div class="container footer-grid">
+      <div class="footer-brand">
+        <h3>MOGNO BRECHÓ</h3>
+        <p>Curadoria contemporânea e atemporal. Respiramos maresia, madeira de mogno e peças únicas selecionadas pra durar gerações.</p>
+        <div style="margin-top: 18px; display: flex; gap: 12px;">
+          <a href="#" style="color: var(--c-magno-light); font-size: 0.85rem; font-weight: 600;">Instagram @magnobrecho</a>
+        </div>
+      </div>
+
+      <div class="footer-col">
+        <h5>Navegação</h5>
+        <ul class="footer-links">
+          <li><a href="#catalogo">Araras & Novidades</a></li>
+          <li><a href="#manifesto">Manifesto Consciente</a></li>
+          <li><a href="#diferenciais">Nossa Curadoria</a></li>
+          <li><a href="#catalogo">Tamanhos & Medidas</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-col">
+        <h5>Categorias</h5>
+        <ul class="footer-links">
+          <li><a href="#catalogo">Puro Linho</a></li>
+          <li><a href="#catalogo">Vestidos & Balneário</a></li>
+          <li><a href="#catalogo">Alfaiataria Vintage</a></li>
+          <li><a href="#catalogo">Bolsas em Palha & Couro</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-col">
+        <h5>Atendimento</h5>
+        <p style="font-size: 0.88rem; color: rgba(243, 238, 228, 0.75); margin-bottom: 12px; line-height: 1.6;">
+          Dúvidas sobre caimento, envio ou reservas de peças únicas? Fale diretamente com nossa curadora via WhatsApp.
+        </p>
+        <a href="https://api.whatsapp.com/send?phone=5579999009560" target="_blank" class="btn-primary" style="padding: 10px 20px; font-size: 0.85rem;">
+          Falar no WhatsApp
+        </a>
+      </div>
+    </div>
+
+    <div class="container footer-bottom">
+      <div>© 2026 Mogno Brechó. Todos os direitos reservados. Moda circular com alma de mogno.</div>
+      <div>Desenvolvido com excelência contemporânea.</div>
+    </div>
+  </footer>
+
+  <!-- =========================================================================
+       MODAL DE ACESSO RESTRITO (SENHA DO PAINEL ADMIN)
+       ========================================================================= -->
+  <div id="admin-password-modal" class="modal-backdrop">
+    <div class="password-modal-card">
+      <button id="btn-close-password-modal" class="modal-close-btn" aria-label="Fechar">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+      </button>
+
+      <div class="password-modal-icon">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+      </div>
+
+      <h3 class="password-modal-title">Acesso Restrito</h3>
+      <p class="password-modal-desc">Essa área é só para quem cuida da curadoria do acervo. Digite a senha para entrar.</p>
+
+      <form id="admin-password-form">
+        <div class="form-group" style="margin-bottom: 10px;">
+          <input type="password" id="admin-password-input" class="form-input" placeholder="Senha" autocomplete="off" required>
+        </div>
+        <p id="password-error-msg" class="password-error-msg" style="display: none;">Senha incorreta. Tente novamente.</p>
+        <button type="submit" class="form-submit-btn">Entrar no Painel</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="js/products-data.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
