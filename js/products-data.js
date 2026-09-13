@@ -1,7 +1,7 @@
 /**
  * Catálogo Inicial do Mogno Brechó
  * ---------------------------------------------------------------------
- * O Mogno não é um brechó de dono só — é o garimpo de uma universitária
+ * O Mogno não é um brechó de dono só — é o garimpo de Lucas, universitário
  * de Aracaju que visita brechós, feiras e bazares por toda a cidade
  * (Centro, Atalaia, Jardins, Farolândia, Coqueiral...) em busca de peças
  * com alma. Por isso cada item guarda também onde foi encontrado (`source`).
