@@ -83,7 +83,7 @@
             Peças raras com a alma crua do <em>mogno e da maresia</em>.
           </h1>
           <p class="hero-desc">
-            Um acervo garimpado peça a peça, com o cheiro de sal, prancha e memória analógica. Tons de madeira mogno, linho vivido e alfaiataria fluída que já têm história pra contar — e ganham a sua a partir de agora.
+            Um garimpo de verdade: percorro brechós, feiras e bazares por toda Aracaju pra separar peça por peça o que realmente vale a pena. Tons de madeira mogno, linho vivido e alfaiataria fluída — cada uma com sua própria história, e a partir de agora, com a sua também.
           </p>
           <div class="hero-actions">
             <a href="#catalogo" class="btn-primary">
@@ -216,12 +216,29 @@
             </div>
 
             <div class="sub-filter-group">
-              <span class="sub-filter-label">Estado:</span>
+              <span class="sub-filter-label">
+                Estado:
+                <button type="button" class="condition-info-btn" id="btn-condition-info" aria-label="O que significa cada estado de conservação?" title="O que significa cada estado?">?</button>
+              </span>
               <button class="tag-filter tag-condition-filter active" data-condition="todos">Todos</button>
-              <button class="tag-filter tag-condition-filter" data-condition="Como Novo">Como Novo</button>
               <button class="tag-filter tag-condition-filter" data-condition="Impecável">Impecável</button>
-              <button class="tag-filter tag-condition-filter" data-condition="Raridade Vintage">Vintage Raro</button>
-              <button class="tag-filter tag-condition-filter" data-condition="Novo com Etiqueta">Com Etiqueta</button>
+              <button class="tag-filter tag-condition-filter" data-condition="Como Novo">Como Novo</button>
+              <button class="tag-filter tag-condition-filter" data-condition="Reformado">Reformado</button>
+              <button class="tag-filter tag-condition-filter" data-condition="Avarias">Avarias</button>
+
+              <div id="condition-info-popover" class="condition-info-popover">
+                <button type="button" id="btn-close-condition-info" class="condition-info-close" aria-label="Fechar">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                </button>
+                <h5>O que significa cada estado?</h5>
+                <ul>
+                  <li><span class="condition-dot condition-impecavel"></span><strong>Impecável</strong> — sem sinais de uso, parece saída de loja.</li>
+                  <li><span class="condition-dot condition-como-novo"></span><strong>Como Novo</strong> — usada poucas vezes, sem marcas visíveis.</li>
+                  <li><span class="condition-dot condition-reformado"></span><strong>Reformado</strong> — passou por um reparo cuidadoso (costura, botão, bainha) e está pronta pra uso.</li>
+                  <li><span class="condition-dot condition-avarias"></span><strong>Avarias</strong> — tem algum sinal visível (manchinha, furinho) descrito no anúncio, por isso o preço é mais baixo.</li>
+                </ul>
+                <p class="condition-info-footer">Somos sempre transparentes sobre o estado real de cada peça. 🤍</p>
+              </div>
             </div>
 
             <div class="catalog-counter-text" id="catalog-counter">
@@ -241,20 +258,20 @@
     <section class="manifesto-section" id="manifesto">
       <div class="container manifesto-grid">
         <div class="manifesto-text-block">
-          <span class="manifesto-tag">Slow Fashion & Maresia</span>
-          <h2 class="manifesto-title">A roupa mais sustentável é aquela que já existe.</h2>
+          <span class="manifesto-tag">Feito por uma universitária de Aracaju</span>
+          <h2 class="manifesto-title">Um brechó sem dono só — um garimpo pela cidade inteira.</h2>
           <p class="manifesto-p">
-            Nascemos do fascínio pela madeira de mogno, pela brisa do mar e pelas tramas cruas de linho e algodão. O <strong>Mogno Brechó</strong> celebra o luxo despretensioso: peças com história, textura e memória — feitas pra durar através de verões, viagens e histórias contadas na prancha ou na varanda.
+            O <strong>Mogno Brechó</strong> não nasceu de uma loja grande, nasceu de mim: uma universitária apaixonada por moda e por essa cidade. Toda semana eu visito brechós, feiras e bazares espalhados por Aracaju — do Centro à Atalaia — e trago pra cá só o que realmente vale a pena vestir de novo. Peças com história, textura e memória, feitas pra durar através de verões, viagens e conversas na varanda.
           </p>
 
           <div class="manifesto-pillars">
             <div class="pillar-card">
-              <h4>Garimpo Criterioso</h4>
-              <p>Cada peça passa por vistoria rigorosa de costura, botões e fibras nobres.</p>
+              <h4>Garimpo Pela Cidade</h4>
+              <p>Percorro brechós e feiras de vários bairros de Aracaju pra montar o acervo com minhas próprias mãos.</p>
             </div>
             <div class="pillar-card">
-              <h4>Amor pelo Oceano</h4>
-              <p>Evitamos o consumo desenfreado da indústria têxtil, protegendo nossas águas.</p>
+              <h4>Transparência Total</h4>
+              <p>Cada peça tem o estado real declarado — de Impecável a Avarias — sem letra miúda.</p>
             </div>
             <div class="pillar-card">
               <h4>Tons de Mogno & Terra</h4>
@@ -405,10 +422,10 @@
               <div class="form-group">
                 <label class="form-label" for="prod-condition">Estado da Peça</label>
                 <select id="prod-condition" class="form-select">
-                  <option value="Como Novo">Como Novo</option>
                   <option value="Impecável" selected>Impecável</option>
-                  <option value="Raridade Vintage">Raridade Vintage</option>
-                  <option value="Novo com Etiqueta">Novo com Etiqueta</option>
+                  <option value="Como Novo">Como Novo</option>
+                  <option value="Reformado">Reformado</option>
+                  <option value="Avarias">Avarias</option>
                 </select>
               </div>
             </div>
@@ -416,6 +433,12 @@
             <div class="form-group">
               <label class="form-label" for="prod-material">Tecido & Composição</label>
               <input type="text" id="prod-material" class="form-input" placeholder="Ex: 100% Linho puro, Chiffon de Seda">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="prod-source">Garimpado em (Brechó / Feira / Bairro)</label>
+              <input type="text" id="prod-source" class="form-input" list="source-presets-list" placeholder="Ex: Brechó do Bairro Jardins">
+              <datalist id="source-presets-list"></datalist>
             </div>
 
             <div class="form-row-2">
@@ -603,10 +626,10 @@
           <div class="form-group">
             <label class="form-label" for="edit-prod-condition">Estado</label>
             <select id="edit-prod-condition" class="form-select">
-              <option value="Como Novo">Como Novo</option>
               <option value="Impecável">Impecável</option>
-              <option value="Raridade Vintage">Raridade Vintage</option>
-              <option value="Novo com Etiqueta">Novo com Etiqueta</option>
+              <option value="Como Novo">Como Novo</option>
+              <option value="Reformado">Reformado</option>
+              <option value="Avarias">Avarias</option>
             </select>
           </div>
         </div>
@@ -621,6 +644,11 @@
             <label class="form-label" for="edit-prod-material">Tecido / Material</label>
             <input type="text" id="edit-prod-material" class="form-input">
           </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="edit-prod-source">Garimpado em (Brechó / Feira / Bairro)</label>
+          <input type="text" id="edit-prod-source" class="form-input" list="source-presets-list">
         </div>
 
         <div class="form-group">
@@ -656,9 +684,9 @@
     <div class="container footer-grid">
       <div class="footer-brand">
         <h3>MOGNO BRECHÓ</h3>
-        <p>Curadoria contemporânea e atemporal. Respiramos maresia, madeira de mogno e peças únicas selecionadas pra durar gerações.</p>
-        <div style="margin-top: 18px; display: flex; gap: 12px;">
-          <a href="#" style="color: var(--c-magno-light); font-size: 0.85rem; font-weight: 600;">Instagram @magnobrecho</a>
+        <p>Um garimpo pessoal por brechós, feiras e bazares de Aracaju. Curadoria de universitária, com carinho de gente que ama moda e essa cidade.</p>
+        <div class="footer-social">
+          <a href="#" target="_blank" rel="noopener">Instagram @mognobrecho</a>
         </div>
       </div>
 
@@ -666,8 +694,8 @@
         <h5>Navegação</h5>
         <ul class="footer-links">
           <li><a href="#catalogo">Araras & Novidades</a></li>
-          <li><a href="#manifesto">Manifesto Consciente</a></li>
-          <li><a href="#diferenciais">Nossa Curadoria</a></li>
+          <li><a href="#manifesto">Manifesto</a></li>
+          <li><a href="#diferenciais">Sustentabilidade</a></li>
           <li><a href="#catalogo">Tamanhos & Medidas</a></li>
         </ul>
       </div>
@@ -684,18 +712,18 @@
 
       <div class="footer-col">
         <h5>Atendimento</h5>
-        <p style="font-size: 0.88rem; color: rgba(243, 238, 228, 0.75); margin-bottom: 12px; line-height: 1.6;">
-          Dúvidas sobre caimento, envio ou reservas de peças únicas? Fale diretamente com nossa curadora via WhatsApp.
+        <p class="footer-service-text">
+          Dúvidas sobre caimento, envio ou reserva de alguma peça? Me chama direto no WhatsApp, eu mesma respondo.
         </p>
-        <a href="https://api.whatsapp.com/send?phone=5579999009560" target="_blank" class="btn-primary" style="padding: 10px 20px; font-size: 0.85rem;">
+        <a href="https://api.whatsapp.com/send?phone=5579999009560" target="_blank" rel="noopener" class="btn-primary footer-whatsapp-btn">
           Falar no WhatsApp
         </a>
       </div>
     </div>
 
     <div class="container footer-bottom">
-      <div>© 2026 Mogno Brechó. Todos os direitos reservados. Moda circular com alma de mogno.</div>
-      <div>Desenvolvido com excelência contemporânea.</div>
+      <div>© 2026 Mogno Brechó. Aracaju, Sergipe. Moda circular com alma de mogno.</div>
+      <div>Garimpado, revisado e vendido por uma pessoa só — com muito carinho.</div>
     </div>
   </footer>
 

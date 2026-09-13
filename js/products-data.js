@@ -1,6 +1,14 @@
 /**
  * Catálogo Inicial do Mogno Brechó
- * Curadoria contemporânea inspirada em maresia, madeira de mogno, linho e alfaiataria.
+ * ---------------------------------------------------------------------
+ * O Mogno não é um brechó de dono só — é o garimpo de uma universitária
+ * de Aracaju que visita brechós, feiras e bazares por toda a cidade
+ * (Centro, Atalaia, Jardins, Farolândia, Coqueiral...) em busca de peças
+ * com alma. Por isso cada item guarda também onde foi encontrado (`source`).
+ *
+ * Estado de conservação (`condition`) segue 4 níveis, sempre honestos:
+ *   Impecável > Como Novo > Reformado > Avarias
+ * ---------------------------------------------------------------------
  */
 
 const DEFAULT_PRODUCTS = [
@@ -12,6 +20,7 @@ const DEFAULT_PRODUCTS = [
     size: "M",
     material: "100% Linho Italiano",
     condition: "Como Novo",
+    source: "Brechó do Bairro Jardins",
     price: 240.00,
     originalPrice: 680.00,
     status: "disponivel", // 'disponivel' | 'vendido'
@@ -29,6 +38,7 @@ const DEFAULT_PRODUCTS = [
     size: "G",
     material: "Linho Misto com Viscose",
     condition: "Impecável",
+    source: "Feira da Zeza - Centro",
     price: 165.00,
     originalPrice: 420.00,
     status: "disponivel",
@@ -45,7 +55,8 @@ const DEFAULT_PRODUCTS = [
     brand: "Zara Woman Vintage 90s",
     size: "P",
     material: "Sarja de Algodão & Linho",
-    condition: "Raridade Vintage",
+    condition: "Impecável",
+    source: "Brechó Coqueiral",
     price: 290.00,
     originalPrice: 790.00,
     status: "disponivel",
@@ -62,13 +73,14 @@ const DEFAULT_PRODUCTS = [
     brand: "Curadoria Artesanal Bahiana",
     size: "Único",
     material: "Palha Natural & Couro Ecológico",
-    condition: "Novo com Etiqueta",
+    condition: "Impecável",
+    source: "Bazar Solidário - Farolândia",
     price: 135.00,
     originalPrice: 310.00,
     status: "disponivel",
     badge: "Artesanato Local",
     image: "https://images.unsplash.com/photo-1548036328-c9fa89d128fa?auto=format&fit=crop&w=1000&q=80",
-    description: "Trama manual trançada por artesãs litorâneas, alça reforçada em couro legítimo vegetal. O acessório definitivo para transportar essenciais com leveza praiana e sofisticação.",
+    description: "Trama manual trançada por artesãs litorâneas, alça reforçada em couro legítimo vegetal. Chegou com etiqueta original ainda presa — nunca foi usada. O acessório definitivo para transportar essenciais com leveza praiana e sofisticação.",
     measurements: "Largura: 32cm | Altura: 28cm | Profundidade: 12cm",
     vibe: "Natural & Orgânico"
   },
@@ -80,6 +92,7 @@ const DEFAULT_PRODUCTS = [
     size: "M",
     material: "Viscolinho Sustentável",
     condition: "Impecável",
+    source: "Brechó Universitário - Cidade Nova",
     price: 180.00,
     originalPrice: 460.00,
     status: "disponivel",
@@ -96,7 +109,8 @@ const DEFAULT_PRODUCTS = [
     brand: "Le Lis Blanc Acervo",
     size: "Único",
     material: "Chiffon de Seda Mista",
-    condition: "Excelente",
+    condition: "Como Novo",
+    source: "Feira de Antiguidades - Praça Fausto Cardoso",
     price: 195.00,
     originalPrice: 580.00,
     status: "disponivel",
@@ -114,6 +128,7 @@ const DEFAULT_PRODUCTS = [
     size: "P",
     material: "100% Linho com Tingimento Âmbar",
     condition: "Como Novo",
+    source: "Brechó do Bairro Jardins",
     price: 155.00,
     originalPrice: 390.00,
     status: "vendido",
@@ -130,15 +145,34 @@ const DEFAULT_PRODUCTS = [
     brand: "Garimpo Italiano 1994",
     size: "Único",
     material: "Armação em Acetato e Metal Dourado",
-    condition: "Raridade Vintage",
+    condition: "Reformado",
+    source: "Garagem Sale - Atalaia",
     price: 140.00,
     originalPrice: 450.00,
     status: "disponivel",
     badge: "Vintage Genuíno",
     image: "https://images.unsplash.com/photo-1511499767150-a48a237f0083?auto=format&fit=crop&w=1000&q=80",
-    description: "Óculos de sol autêntico anos 90 garimpado em Florença. Lentes âmbar degradê com proteção UV400 completa e detalhes em filigrana dourada.",
+    description: "Óculos de sol autêntico anos 90 garimpado em Florença. Passou por reforço profissional na dobradiça antes de chegar até você — hoje abre e fecha perfeitamente. Lentes âmbar degradê com proteção UV400 completa e detalhes em filigrana dourada.",
     measurements: "Largura frontal: 14cm | Ponte: 1.8cm",
     vibe: "Retro Chic"
+  },
+  {
+    id: "mg-09",
+    title: "Blazer Alfaiataria Terracota Cropped",
+    category: "alfaiataria",
+    brand: "Achado de Brechó",
+    size: "P",
+    material: "Sarja Pesada de Algodão",
+    condition: "Avarias",
+    source: "Feira da Zeza - Centro",
+    price: 95.00,
+    originalPrice: 260.00,
+    status: "disponivel",
+    badge: "Preço Honesto",
+    image: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=1000&q=80",
+    description: "Blazer cropped de alfaiataria em terracota queimado, ombro estruturado e botões em resina. Transparência total: tem um pequeno reparo (quase invisível) no forro interno e uma leve descoloração na barra da manga esquerda — nada que atrapalhe o uso, só reduz bastante o preço.",
+    measurements: "Ombro a ombro: 40cm | Comprimento: 48cm",
+    vibe: "Elegância Minimalista"
   }
 ];
 
@@ -151,4 +185,15 @@ const ADMIN_IMAGE_PRESETS = [
   { name: "Alfaiataria Terracota", url: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=1000&q=80" },
   { name: "Top Cropped Artesanal", url: "https://images.unsplash.com/photo-1529139574466-a303027c1d8b?auto=format&fit=crop&w=1000&q=80" },
   { name: "Sandália de Couro Artesanal", url: "https://images.unsplash.com/photo-1543163521-1bf539c55dd2?auto=format&fit=crop&w=1000&q=80" }
+];
+
+// Sugestões de "garimpado em" pra facilitar o cadastro no painel admin
+const SOURCE_PRESETS = [
+  "Brechó do Bairro Jardins",
+  "Feira da Zeza - Centro",
+  "Brechó Coqueiral",
+  "Garagem Sale - Atalaia",
+  "Brechó Universitário - Cidade Nova",
+  "Feira de Antiguidades - Praça Fausto Cardoso",
+  "Bazar Solidário - Farolândia"
 ];

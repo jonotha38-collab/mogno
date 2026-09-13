@@ -796,6 +796,7 @@ input, select, textarea {
   align-items: center;
   gap: 8px;
   flex-wrap: wrap;
+  position: relative;
 }
 
 .sub-filter-label {
@@ -1047,6 +1048,25 @@ input, select, textarea {
   margin-bottom: 8px;
 }
 
+.card-source-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.72rem;
+  color: var(--c-charcoal-500);
+  margin-bottom: 10px;
+}
+
+.card-source-tag svg {
+  flex-shrink: 0;
+  color: var(--c-magno-light);
+}
+
+.card-source-tag strong {
+  color: var(--c-charcoal-700);
+  font-weight: 600;
+}
+
 .card-details-meta {
   font-size: 0.8rem;
   color: var(--c-charcoal-500);
@@ -1061,6 +1081,139 @@ input, select, textarea {
   height: 3px;
   border-radius: 50%;
   background: var(--c-charcoal-400);
+}
+
+/* ==========================================================================
+   TAG DE ESTADO DE CONSERVAÇÃO (transparência é nosso valor central)
+   ========================================================================== */
+.condition-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.condition-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.condition-impecavel .condition-dot,
+.condition-dot.condition-impecavel { background: var(--c-sage-500); }
+.condition-impecavel { color: var(--c-sage-700); }
+
+.condition-como-novo .condition-dot,
+.condition-dot.condition-como-novo { background: #4A7FA6; }
+.condition-como-novo { color: #33607F; }
+
+.condition-reformado .condition-dot,
+.condition-dot.condition-reformado { background: var(--c-amber-gold); }
+.condition-reformado { color: #8A5A12; }
+
+.condition-avarias .condition-dot,
+.condition-dot.condition-avarias { background: #B0562F; }
+.condition-avarias { color: var(--c-magno-primary); }
+
+/* Botão "?" que explica os estados */
+.sub-filter-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.condition-info-btn {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 1px solid var(--c-charcoal-400);
+  color: var(--c-charcoal-500);
+  font-size: 0.62rem;
+  font-weight: 700;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--c-white);
+  flex-shrink: 0;
+}
+
+.condition-info-btn:hover {
+  border-color: var(--c-magno-primary);
+  color: var(--c-magno-primary);
+}
+
+.condition-info-popover {
+  display: none;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  z-index: 40;
+  width: 300px;
+  max-width: calc(100vw - 40px);
+  background: var(--c-white);
+  border: 1px solid var(--c-sand-200);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  padding: 18px 20px;
+  margin-top: 10px;
+}
+
+.condition-info-popover.active {
+  display: block;
+}
+
+.condition-info-close {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  color: var(--c-charcoal-400);
+}
+
+.condition-info-close:hover {
+  color: var(--c-charcoal-800);
+}
+
+.condition-info-popover h5 {
+  font-family: var(--font-serif);
+  font-size: 0.95rem;
+  color: var(--c-charcoal-900);
+  margin-bottom: 12px;
+  padding-right: 16px;
+}
+
+.condition-info-popover ul {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  margin-bottom: 12px;
+}
+
+.condition-info-popover li {
+  font-size: 0.78rem;
+  line-height: 1.45;
+  color: var(--c-charcoal-600);
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.condition-info-popover li .condition-dot {
+  margin-top: 5px;
+}
+
+.condition-info-popover li strong {
+  color: var(--c-charcoal-900);
+}
+
+.condition-info-footer {
+  font-size: 0.74rem;
+  color: var(--c-charcoal-500);
+  border-top: 1px dashed var(--c-sand-200);
+  padding-top: 10px;
 }
 
 .card-price-row {
@@ -2185,6 +2338,30 @@ input, select, textarea {
 .footer-links a:hover {
   color: var(--c-white);
   padding-left: 4px;
+}
+
+.footer-social {
+  margin-top: 18px;
+  display: flex;
+  gap: 12px;
+}
+
+.footer-social a {
+  color: var(--c-magno-light);
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.footer-service-text {
+  font-size: 0.88rem;
+  color: rgba(243, 238, 228, 0.75);
+  margin-bottom: 12px;
+  line-height: 1.6;
+}
+
+.footer-whatsapp-btn {
+  padding: 10px 20px;
+  font-size: 0.85rem;
 }
 
 .footer-bottom {

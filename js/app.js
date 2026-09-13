@@ -16,6 +16,9 @@
   // que visitantes comuns encontrem ou entrem no painel admin.
   const ADMIN_PASSWORD = 'mogno2026';
 
+  // ⚠️ Troque pelo seu número de WhatsApp real, com DDI+DDD, só números (ex: 5579912345678).
+  const WHATSAPP_NUMBER = '5579999009560';
+
   let products = [];
   let cart = [];
   let activeCategory = 'todos';
@@ -89,6 +92,11 @@
     btnClosePasswordModal: document.getElementById('btn-close-password-modal'),
     btnLockAdmin: document.getElementById('btn-lock-admin'),
 
+    // Popover explicativo de estado de conservação
+    btnConditionInfo: document.getElementById('btn-condition-info'),
+    conditionInfoPopover: document.getElementById('condition-info-popover'),
+    btnCloseConditionInfo: document.getElementById('btn-close-condition-info'),
+
     // Menu Mobile (Hambúrguer)
     siteNav: document.getElementById('site-nav'),
     btnMobileMenuToggle: document.getElementById('btn-mobile-menu-toggle'),
@@ -101,11 +109,18 @@
     loadProducts();
     loadCart();
     checkAdminAccess();
+    populateSourcePresets();
     setupEventListeners();
     renderStoreCatalog();
     renderCart();
     renderAdminMetrics();
     renderAdminList();
+  }
+
+  function populateSourcePresets() {
+    const datalist = document.getElementById('source-presets-list');
+    if (!datalist || typeof SOURCE_PRESETS === 'undefined') return;
+    datalist.innerHTML = SOURCE_PRESETS.map(place => `<option value="${place}"></option>`).join('');
   }
 
   // --- ACESSO RESTRITO AO PAINEL ADMIN ---
@@ -280,6 +295,24 @@
     }
   }
 
+  // --- ESTADO DE CONSERVAÇÃO (helper visual) ---
+  // Cada peça é classificada honestamente em 4 níveis, do melhor pro que precisa de mais atenção.
+  const CONDITION_STYLES = {
+    'Impecável': 'condition-impecavel',
+    'Como Novo': 'condition-como-novo',
+    'Reformado': 'condition-reformado',
+    'Avarias': 'condition-avarias'
+  };
+
+  function getConditionClass(condition) {
+    return CONDITION_STYLES[condition] || 'condition-como-novo';
+  }
+
+  function renderConditionTag(condition) {
+    if (!condition) return '';
+    return `<span class="condition-tag ${getConditionClass(condition)}"><span class="condition-dot"></span>${condition}</span>`;
+  }
+
   // --- RENDERIZAÇÃO DA VITRINE (LOJA) ---
   function renderStoreCatalog() {
     if (!elements.productsGrid) return;
@@ -389,10 +422,17 @@
 
             <h3 class="card-title">${product.title}</h3>
 
+            ${product.source ? `
+              <div class="card-source-tag">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 10c0 6-9 13-9 13s-9-7-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+                Garimpado no <strong>${product.source}</strong>
+              </div>
+            ` : ''}
+
             <div class="card-details-meta">
               <span>${product.material || 'Linho / Sarja'}</span>
               <span class="dot"></span>
-              <span>${product.condition}</span>
+              ${renderConditionTag(product.condition)}
             </div>
 
             <div class="card-price-row">
@@ -476,7 +516,7 @@
           </div>
           <div class="modal-meta-item">
             <small>Estado da Peça</small>
-            <strong>${product.condition}</strong>
+            <strong>${renderConditionTag(product.condition)}</strong>
           </div>
           <div class="modal-meta-item">
             <small>Composição</small>
@@ -486,9 +526,15 @@
             <small>Atmosfera / Vibe</small>
             <strong>${product.vibe || 'Maresia & Mogno'}</strong>
           </div>
+          ${product.source ? `
+            <div class="modal-meta-item">
+              <small>Garimpado em</small>
+              <strong>${product.source}</strong>
+            </div>
+          ` : ''}
         </div>
 
-        <p class="modal-desc">${product.description || 'Peça única selecionada cuidadosamente por nossa equipe de curadoria.'}</p>
+        <p class="modal-desc">${product.description || 'Peça única, garimpada com carinho entre os brechós de Aracaju.'}</p>
 
         ${product.measurements ? `
           <div style="background: var(--c-sand-100); padding: 12px 16px; border-radius: 8px; margin-bottom: 24px; font-size: 0.82rem;">
@@ -639,8 +685,7 @@
 
     const msg = `Olá, Mogno Brechó! 🌿☀️\n\nAdorei o acervo e gostaria de reservar as seguintes peças:\n\n${itemsText}\n\n*Total:* R$ ${subtotal.toFixed(2).replace('.', ',')}\n\nComo combinamos o pagamento e o envio?`;
     const encoded = encodeURIComponent(msg);
-    // WhatsApp URL (usa número placeholder brasileiro amigável)
-    const waUrl = `https://api.whatsapp.com/send?phone=5579999009560&text=${encoded}`;
+    const waUrl = `https://api.whatsapp.com/send?phone=${WHATSAPP_NUMBER}&text=${encoded}`;
     window.open(waUrl, '_blank');
   }
 
@@ -799,6 +844,7 @@
     const brand = document.getElementById('prod-brand').value.trim() || 'Garimpo Vintage';
     const material = document.getElementById('prod-material').value.trim() || 'Linho & Algodão';
     const condition = document.getElementById('prod-condition').value;
+    const source = document.getElementById('prod-source').value.trim() || 'Garimpo por Aracaju';
     const vibe = document.getElementById('prod-vibe').value.trim() || 'Maresia & Mogno';
     const badge = document.getElementById('prod-badge').value.trim() || 'Peça Única';
     const description = document.getElementById('prod-desc').value.trim();
@@ -818,6 +864,7 @@
       size,
       material,
       condition,
+      source,
       price,
       originalPrice,
       status: 'disponivel',
@@ -858,6 +905,7 @@
     document.getElementById('edit-prod-material').value = product.material || '';
     document.getElementById('edit-prod-condition').value = product.condition || 'Impecável';
     document.getElementById('edit-prod-status').value = product.status || 'disponivel';
+    document.getElementById('edit-prod-source').value = product.source || '';
     document.getElementById('edit-prod-vibe').value = product.vibe || '';
     document.getElementById('edit-prod-image-url').value = product.image || '';
     document.getElementById('edit-prod-desc').value = product.description || '';
@@ -887,6 +935,7 @@
     product.material = document.getElementById('edit-prod-material').value.trim();
     product.condition = document.getElementById('edit-prod-condition').value;
     product.status = document.getElementById('edit-prod-status').value;
+    product.source = document.getElementById('edit-prod-source').value.trim();
     product.vibe = document.getElementById('edit-prod-vibe').value.trim();
     product.image = document.getElementById('edit-prod-image-url').value.trim() || product.image;
     product.description = document.getElementById('edit-prod-desc').value.trim();
@@ -966,6 +1015,29 @@
     if (elements.btnLockAdmin) {
       elements.btnLockAdmin.addEventListener('click', lockAdminAccess);
     }
+
+    // Popover explicativo de estado de conservação
+    if (elements.btnConditionInfo && elements.conditionInfoPopover) {
+      elements.btnConditionInfo.addEventListener('click', (e) => {
+        e.stopPropagation();
+        elements.conditionInfoPopover.classList.toggle('active');
+      });
+    }
+    if (elements.btnCloseConditionInfo) {
+      elements.btnCloseConditionInfo.addEventListener('click', () => {
+        elements.conditionInfoPopover.classList.remove('active');
+      });
+    }
+    document.addEventListener('click', (e) => {
+      if (
+        elements.conditionInfoPopover &&
+        elements.conditionInfoPopover.classList.contains('active') &&
+        !elements.conditionInfoPopover.contains(e.target) &&
+        e.target !== elements.btnConditionInfo
+      ) {
+        elements.conditionInfoPopover.classList.remove('active');
+      }
+    });
 
     // Menu Mobile (Hambúrguer)
     if (elements.btnMobileMenuToggle) {
