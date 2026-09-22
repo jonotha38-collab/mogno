@@ -173,10 +173,10 @@
         </div>
 
         <!-- Barra de Filtros & Controles -->
-        <div class="filters-bar-wrapper">
+        <div class="filters-bar-wrapper" id="filters-bar">
           <div class="filters-top-row">
             <!-- Categorias -->
-            <div class="category-pills" role="tablist">
+            <div class="category-pills" role="tablist" aria-label="Categorias">
               <button class="pill-filter active" data-category="todos">Todas as Peças</button>
               <button class="pill-filter" data-category="vestidos">Vestidos & Saias</button>
               <button class="pill-filter" data-category="camisas">Camisas de Linho</button>
@@ -189,7 +189,7 @@
             <div class="search-and-sort">
               <div class="search-box">
                 <svg class="search-icon-svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-                <input type="text" id="search-products-input" placeholder="Buscar por linho, Zara, Farm...">
+                <input type="text" id="search-products-input" placeholder="Buscar por linho, Zara, Farm..." aria-label="Buscar peças">
               </div>
 
               <div class="select-filter-wrap">
@@ -202,9 +202,62 @@
             </div>
           </div>
 
-          <!-- Filtros Refinados: Tamanho e Estado -->
+          <!-- Filtro principal: Estado de conservação -->
+          <div class="condition-filter-strip" aria-label="Filtrar por estado da peça">
+            <div class="condition-strip-header">
+              <span class="sub-filter-label">
+                Estado da peça
+                <button type="button" class="condition-info-btn" id="btn-condition-info" aria-label="O que significa cada estado de conservação?" title="O que significa cada estado?">?</button>
+              </span>
+              <p class="condition-strip-hint">Escolha como você quer encontrar: impecáveis, como novas, reformadas ou com avarias.</p>
+            </div>
+
+            <div class="condition-chips" role="tablist" aria-label="Estados de conservação">
+              <button class="condition-chip active" data-condition="todos" type="button">
+                <span class="condition-chip-dot condition-all"></span>
+                <span class="condition-chip-label">Todas</span>
+                <span class="condition-chip-count" data-count-for="todos">0</span>
+              </button>
+              <button class="condition-chip tag-condition-filter condition-chip--impecavel" data-condition="Impecável" type="button">
+                <span class="condition-chip-dot condition-impecavel"></span>
+                <span class="condition-chip-label">Impecável</span>
+                <span class="condition-chip-count" data-count-for="Impecável">0</span>
+              </button>
+              <button class="condition-chip tag-condition-filter condition-chip--como-novo" data-condition="Como Novo" type="button">
+                <span class="condition-chip-dot condition-como-novo"></span>
+                <span class="condition-chip-label">Como Novo</span>
+                <span class="condition-chip-count" data-count-for="Como Novo">0</span>
+              </button>
+              <button class="condition-chip tag-condition-filter condition-chip--reformado" data-condition="Reformado" type="button">
+                <span class="condition-chip-dot condition-reformado"></span>
+                <span class="condition-chip-label">Reformado</span>
+                <span class="condition-chip-count" data-count-for="Reformado">0</span>
+              </button>
+              <button class="condition-chip tag-condition-filter condition-chip--avarias" data-condition="Avarias" type="button">
+                <span class="condition-chip-dot condition-avarias"></span>
+                <span class="condition-chip-label">Com Avarias</span>
+                <span class="condition-chip-count" data-count-for="Avarias">0</span>
+              </button>
+            </div>
+
+            <div id="condition-info-popover" class="condition-info-popover">
+              <button type="button" id="btn-close-condition-info" class="condition-info-close" aria-label="Fechar">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+              </button>
+              <h5>O que significa cada estado?</h5>
+              <ul>
+                <li><span class="condition-dot condition-impecavel"></span><strong>Impecável</strong> — sem sinais de uso, parece saída de loja.</li>
+                <li><span class="condition-dot condition-como-novo"></span><strong>Como Novo</strong> — usada poucas vezes, sem marcas visíveis.</li>
+                <li><span class="condition-dot condition-reformado"></span><strong>Reformado</strong> — passou por um reparo cuidadoso (costura, botão, bainha) e está pronta pra uso.</li>
+                <li><span class="condition-dot condition-avarias"></span><strong>Com Avarias</strong> — tem algum sinal visível (manchinha, furinho) descrito no anúncio, por isso o preço é mais baixo.</li>
+              </ul>
+              <p class="condition-info-footer">Somos sempre transparentes sobre o estado real de cada peça.</p>
+            </div>
+          </div>
+
+          <!-- Filtros Refinados: Tamanho + contador -->
           <div class="filters-secondary-row">
-            <div class="sub-filter-group">
+            <div class="sub-filter-group size-filter-scroll">
               <span class="sub-filter-label">Tamanho:</span>
               <button class="tag-filter tag-size-filter active" data-size="todos">Todos</button>
               <button class="tag-filter tag-size-filter" data-size="PP">PP</button>
@@ -215,34 +268,19 @@
               <button class="tag-filter tag-size-filter" data-size="Único">Único</button>
             </div>
 
-            <div class="sub-filter-group">
-              <span class="sub-filter-label">
-                Estado:
-                <button type="button" class="condition-info-btn" id="btn-condition-info" aria-label="O que significa cada estado de conservação?" title="O que significa cada estado?">?</button>
-              </span>
-              <button class="tag-filter tag-condition-filter active" data-condition="todos">Todos</button>
-              <button class="tag-filter tag-condition-filter" data-condition="Impecável">Impecável</button>
-              <button class="tag-filter tag-condition-filter" data-condition="Como Novo">Como Novo</button>
-              <button class="tag-filter tag-condition-filter" data-condition="Reformado">Reformado</button>
-              <button class="tag-filter tag-condition-filter" data-condition="Avarias">Avarias</button>
-
-              <div id="condition-info-popover" class="condition-info-popover">
-                <button type="button" id="btn-close-condition-info" class="condition-info-close" aria-label="Fechar">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+            <div class="catalog-toolbar">
+              <div class="catalog-counter-text" id="catalog-counter">Carregando peças...</div>
+              <button type="button" id="btn-clear-all-filters" class="btn-clear-filters" hidden>
+                Limpar filtros
+              </button>
+              <div class="view-density" role="group" aria-label="Densidade da grade">
+                <button type="button" class="density-btn active" data-density="comfortable" title="Grade confortável" aria-pressed="true">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><rect x="3" y="3" width="8" height="8" rx="1"/><rect x="13" y="3" width="8" height="8" rx="1"/><rect x="3" y="13" width="8" height="8" rx="1"/><rect x="13" y="13" width="8" height="8" rx="1"/></svg>
                 </button>
-                <h5>O que significa cada estado?</h5>
-                <ul>
-                  <li><span class="condition-dot condition-impecavel"></span><strong>Impecável</strong> — sem sinais de uso, parece saída de loja.</li>
-                  <li><span class="condition-dot condition-como-novo"></span><strong>Como Novo</strong> — usada poucas vezes, sem marcas visíveis.</li>
-                  <li><span class="condition-dot condition-reformado"></span><strong>Reformado</strong> — passou por um reparo cuidadoso (costura, botão, bainha) e está pronta pra uso.</li>
-                  <li><span class="condition-dot condition-avarias"></span><strong>Avarias</strong> — tem algum sinal visível (manchinha, furinho) descrito no anúncio, por isso o preço é mais baixo.</li>
-                </ul>
-                <p class="condition-info-footer">Somos sempre transparentes sobre o estado real de cada peça. 🤍</p>
+                <button type="button" class="density-btn" data-density="compact" title="Grade compacta" aria-pressed="false">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><rect x="2" y="2" width="5" height="5" rx="0.5"/><rect x="9.5" y="2" width="5" height="5" rx="0.5"/><rect x="17" y="2" width="5" height="5" rx="0.5"/><rect x="2" y="9.5" width="5" height="5" rx="0.5"/><rect x="9.5" y="9.5" width="5" height="5" rx="0.5"/><rect x="17" y="9.5" width="5" height="5" rx="0.5"/><rect x="2" y="17" width="5" height="5" rx="0.5"/><rect x="9.5" y="17" width="5" height="5" rx="0.5"/><rect x="17" y="17" width="5" height="5" rx="0.5"/></svg>
+                </button>
               </div>
-            </div>
-
-            <div class="catalog-counter-text" id="catalog-counter">
-              Carregando peças...
             </div>
           </div>
         </div>
@@ -274,7 +312,7 @@
               </svg>
               <span class="sr-only">Orgulho trans</span>
             </span>
-            Feito por Lucas, um universitário transgênero de Aracaju
+            Feito por Lucas, um universitário de Aracaju
           </span>
           <h2 class="manifesto-title">Um brechó sem dono só — um garimpo pela cidade inteira.</h2>
           <p class="manifesto-p">
@@ -442,7 +480,7 @@
                   <option value="Impecável" selected>Impecável</option>
                   <option value="Como Novo">Como Novo</option>
                   <option value="Reformado">Reformado</option>
-                  <option value="Avarias">Avarias</option>
+                  <option value="Avarias">Com Avarias</option>
                 </select>
               </div>
             </div>
@@ -646,7 +684,7 @@
               <option value="Impecável">Impecável</option>
               <option value="Como Novo">Como Novo</option>
               <option value="Reformado">Reformado</option>
-              <option value="Avarias">Avarias</option>
+              <option value="Avarias">Com Avarias</option>
             </select>
           </div>
         </div>

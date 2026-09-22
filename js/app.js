@@ -39,14 +39,16 @@
     btnViewStore: document.getElementById('btn-view-store'),
     btnViewAdmin: document.getElementById('btn-view-admin'),
 
-    // Vitrine & Filtros
-    productsGrid: document.getElementById('products-grid'),
-    catalogCounter: document.getElementById('catalog-counter'),
     categoryPills: document.querySelectorAll('.pill-filter'),
     sizeFilters: document.querySelectorAll('.tag-size-filter'),
-    conditionFilters: document.querySelectorAll('.tag-condition-filter'),
+    conditionFilters: document.querySelectorAll('.condition-chip'),
     searchInput: document.getElementById('search-products-input'),
     sortSelect: document.getElementById('sort-products-select'),
+    btnClearAllFilters: document.getElementById('btn-clear-all-filters'),
+    filtersBar: document.getElementById('filters-bar'),
+    densityBtns: document.querySelectorAll('.density-btn'),
+    productsGrid: document.getElementById('products-grid'),
+    catalogCounter: document.getElementById('catalog-counter'),
 
     // Sacola / Cart Drawer
     cartTriggerBtn: document.getElementById('cart-trigger-btn'),
@@ -304,18 +306,72 @@
     'Avarias': 'condition-avarias'
   };
 
+  const CONDITION_LABELS = {
+    'Impecável': 'Impecável',
+    'Como Novo': 'Como Novo',
+    'Reformado': 'Reformado',
+    'Avarias': 'Com Avarias'
+  };
+
   function getConditionClass(condition) {
     return CONDITION_STYLES[condition] || 'condition-como-novo';
   }
 
+  function getConditionLabel(condition) {
+    return CONDITION_LABELS[condition] || condition || '';
+  }
+
   function renderConditionTag(condition) {
     if (!condition) return '';
-    return `<span class="condition-tag ${getConditionClass(condition)}"><span class="condition-dot"></span>${condition}</span>`;
+    return `<span class="condition-tag ${getConditionClass(condition)}"><span class="condition-dot"></span>${getConditionLabel(condition)}</span>`;
+  }
+
+  function clearAllFilters() {
+    activeCategory = 'todos';
+    activeSize = 'todos';
+    activeCondition = 'todos';
+    searchQuery = '';
+    if (elements.searchInput) elements.searchInput.value = '';
+    if (elements.sortSelect) {
+      elements.sortSelect.value = 'recent';
+      activeSort = 'recent';
+    }
+    updateFilterPillStyles();
+    renderStoreCatalog();
+  }
+
+  function hasActiveFilters() {
+    return activeCategory !== 'todos' ||
+      activeSize !== 'todos' ||
+      activeCondition !== 'todos' ||
+      searchQuery.trim() !== '';
+  }
+
+  function updateConditionCounts() {
+    const available = products.filter(p => p.status !== 'vendido');
+    const counts = {
+      todos: available.length,
+      'Impecável': 0,
+      'Como Novo': 0,
+      'Reformado': 0,
+      'Avarias': 0
+    };
+
+    available.forEach(p => {
+      if (counts[p.condition] !== undefined) counts[p.condition]++;
+    });
+
+    document.querySelectorAll('[data-count-for]').forEach(el => {
+      const key = el.getAttribute('data-count-for');
+      el.textContent = counts[key] != null ? counts[key] : 0;
+    });
   }
 
   // --- RENDERIZAÇÃO DA VITRINE (LOJA) ---
   function renderStoreCatalog() {
     if (!elements.productsGrid) return;
+
+    updateConditionCounts();
 
     // Filtragem
     let filtered = products.filter(item => {
@@ -329,10 +385,11 @@
       if (searchQuery.trim() !== '') {
         const query = searchQuery.toLowerCase();
         const matchTitle = item.title.toLowerCase().includes(query);
-        const matchBrand = item.brand.toLowerCase().includes(query);
+        const matchBrand = (item.brand || '').toLowerCase().includes(query);
         const matchMat = (item.material || '').toLowerCase().includes(query);
         const matchDesc = (item.description || '').toLowerCase().includes(query);
-        if (!matchTitle && !matchBrand && !matchMat && !matchDesc) return false;
+        const matchCondition = getConditionLabel(item.condition).toLowerCase().includes(query);
+        if (!matchTitle && !matchBrand && !matchMat && !matchDesc && !matchCondition) return false;
       }
       return true;
     });
@@ -342,15 +399,15 @@
       filtered.sort((a, b) => a.price - b.price);
     } else if (activeSort === 'price-desc') {
       filtered.sort((a, b) => b.price - a.price);
-    } else {
-      // recent (mantém ou inverte id)
-      // Mantém a ordem cadastrada
     }
 
-    // Atualiza contador
+    // Atualiza contador e botão limpar
     const countDisponiveis = filtered.filter(p => p.status !== 'vendido').length;
     if (elements.catalogCounter) {
       elements.catalogCounter.textContent = `${countDisponiveis} peça${countDisponiveis !== 1 ? 's' : ''} disponível${countDisponiveis !== 1 ? 'is' : ''}`;
+    }
+    if (elements.btnClearAllFilters) {
+      elements.btnClearAllFilters.hidden = !hasActiveFilters();
     }
 
     // Renderiza cards
@@ -367,28 +424,19 @@
         </div>
       `;
       const clearBtn = document.getElementById('btn-clear-filters');
-      if (clearBtn) {
-        clearBtn.addEventListener('click', () => {
-          activeCategory = 'todos';
-          activeSize = 'todos';
-          activeCondition = 'todos';
-          searchQuery = '';
-          if (elements.searchInput) elements.searchInput.value = '';
-          updateFilterPillStyles();
-          renderStoreCatalog();
-        });
-      }
+      if (clearBtn) clearBtn.addEventListener('click', clearAllFilters);
       return;
     }
 
-    elements.productsGrid.innerHTML = filtered.map(product => {
+    elements.productsGrid.innerHTML = filtered.map((product, index) => {
       const isSold = product.status === 'vendido';
       const savings = product.originalPrice ? Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100) : 0;
+      const conditionLabel = getConditionLabel(product.condition);
 
       return `
-        <article class="product-card" data-id="${product.id}">
+        <article class="product-card" data-id="${product.id}" tabindex="0" role="button" aria-label="Ver detalhes de ${product.title}" style="animation-delay: ${Math.min(index * 40, 280)}ms">
           <div class="card-media-wrap">
-            <img src="${product.image}" alt="${product.title}" loading="lazy" onerror="this.src='https://images.unsplash.com/photo-1490481651871-ab68de25d43d?auto=format&fit=crop&w=800&q=80'">
+            <img src="${product.image}" alt="${product.title}" loading="lazy" decoding="async" onerror="this.src='https://images.unsplash.com/photo-1490481651871-ab68de25d43d?auto=format&fit=crop&w=800&q=80'">
             
             <div class="card-badges">
               ${isSold 
@@ -396,6 +444,13 @@
                 : `<span class="badge-item badge-nature">${product.badge || 'Peça Única'}</span>`}
               ${product.vibe ? `<span class="badge-item badge-vibe">${product.vibe}</span>` : ''}
             </div>
+
+            ${product.condition ? `
+              <div class="card-condition-badge ${getConditionClass(product.condition)}">
+                <span class="condition-dot"></span>
+                ${conditionLabel}
+              </div>
+            ` : ''}
 
             ${isSold ? `
               <div class="sold-stamp-overlay">
@@ -407,7 +462,7 @@
                   <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
                   Espiar Detalhes
                 </button>
-                <button class="btn-quick-cart" data-action="add-cart" data-id="${product.id}" title="Adicionar à Sacola">
+                <button class="btn-quick-cart" data-action="add-cart" data-id="${product.id}" title="Adicionar à Sacola" aria-label="Adicionar à sacola">
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 0 1-8 0"></path></svg>
                 </button>
               </div>
@@ -447,9 +502,26 @@
       `;
     }).join('');
 
-    // Adiciona event listeners aos botões dos cards
+    // Interações dos cards
+    elements.productsGrid.querySelectorAll('.product-card').forEach(card => {
+      const id = card.getAttribute('data-id');
+      card.addEventListener('click', (e) => {
+        if (e.target.closest('[data-action]')) return;
+        openProductDetail(id);
+      });
+      card.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          openProductDetail(id);
+        }
+      });
+    });
+
     elements.productsGrid.querySelectorAll('[data-action="quick-view"]').forEach(btn => {
-      btn.addEventListener('click', () => openProductDetail(btn.getAttribute('data-id')));
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        openProductDetail(btn.getAttribute('data-id'));
+      });
     });
 
     elements.productsGrid.querySelectorAll('[data-action="add-cart"]').forEach(btn => {
@@ -462,27 +534,15 @@
 
   function updateFilterPillStyles() {
     elements.categoryPills.forEach(pill => {
-      if (pill.getAttribute('data-category') === activeCategory) {
-        pill.classList.add('active');
-      } else {
-        pill.classList.remove('active');
-      }
+      pill.classList.toggle('active', pill.getAttribute('data-category') === activeCategory);
     });
 
     elements.sizeFilters.forEach(pill => {
-      if (pill.getAttribute('data-size') === activeSize) {
-        pill.classList.add('active');
-      } else {
-        pill.classList.remove('active');
-      }
+      pill.classList.toggle('active', pill.getAttribute('data-size') === activeSize);
     });
 
     elements.conditionFilters.forEach(pill => {
-      if (pill.getAttribute('data-condition') === activeCondition) {
-        pill.classList.add('active');
-      } else {
-        pill.classList.remove('active');
-      }
+      pill.classList.toggle('active', pill.getAttribute('data-condition') === activeCondition);
     });
   }
 
@@ -1079,6 +1139,35 @@
         renderStoreCatalog();
       });
     });
+
+    // Limpar todos os filtros
+    if (elements.btnClearAllFilters) {
+      elements.btnClearAllFilters.addEventListener('click', clearAllFilters);
+    }
+
+    // Densidade da grade (confortável / compacta)
+    elements.densityBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const density = btn.getAttribute('data-density');
+        elements.densityBtns.forEach(b => {
+          b.classList.toggle('active', b === btn);
+          b.setAttribute('aria-pressed', b === btn ? 'true' : 'false');
+        });
+        if (elements.productsGrid) {
+          elements.productsGrid.classList.toggle('density-compact', density === 'compact');
+        }
+      });
+    });
+
+    // Destaque sticky da barra de filtros
+    if (elements.filtersBar) {
+      const onScroll = () => {
+        const rect = elements.filtersBar.getBoundingClientRect();
+        elements.filtersBar.classList.toggle('is-stuck', rect.top <= 76);
+      };
+      window.addEventListener('scroll', onScroll, { passive: true });
+      onScroll();
+    }
 
     // Busca com debounce simples
     if (elements.searchInput) {
