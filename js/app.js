@@ -7,17 +7,20 @@
   'use strict';
 
   // --- ESTADO DA APLICAÇÃO ---
-  const STORAGE_KEY_PRODUCTS = 'magno_brecho_products_v1';
   const STORAGE_KEY_CART = 'magno_brecho_cart_v1';
-  const STORAGE_KEY_ADMIN_UNLOCKED = 'mogno_brecho_admin_unlocked_v1';
+  const money = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' });
+  let catalogState = storeApi.configured ? 'loading' : 'demo';
+  let pendingCheckout;
+  let checkoutBusy = false;
+  let orderRead = 0;
+  let orderPage = 0;
+  let catalogRead = 0;
 
-  // ⚠️ Troque essa senha por uma só sua e da pessoa de confiança que vai cuidar do painel.
-  // Isso é uma proteção simples (não é criptografia de verdade), mas já impede
-  // que visitantes comuns encontrem ou entrem no painel admin.
-  const ADMIN_PASSWORD = 'mogno2026';
-
-  // ⚠️ Troque pelo seu número de WhatsApp real, com DDI+DDD, só números (ex: 5579912345678).
-  const WHATSAPP_NUMBER = '5579999009560';
+  function escapeHtml(value) {
+    return String(value ?? '').replace(/[&<>"']/g, character => ({
+      '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+    })[character]);
+  }
 
   let products = [];
   let cart = [];
@@ -27,9 +30,7 @@
   let searchQuery = '';
   let activeSort = 'recent';
   let adminStatusFilter = 'todos';
-  let currentEditingId = null;
-  let logoClickCount = 0;
-  let logoClickTimer = null;
+  let editingProduct = null;
 
   // --- ELEMENTOS DO DOM ---
   const elements = {
@@ -72,7 +73,6 @@
     adminForm: document.getElementById('add-product-form'),
     adminItemsList: document.getElementById('admin-items-list'),
     adminStatusTabs: document.querySelectorAll('.admin-status-tab'),
-    btnResetCatalog: document.getElementById('btn-reset-catalog'),
     imagePresetBtns: document.querySelectorAll('.preset-btn'),
     imageUrlInput: document.getElementById('prod-image-url'),
     imageFileInput: document.getElementById('prod-image-file'),
@@ -86,7 +86,6 @@
     toastContainer: document.getElementById('toast-container'),
 
     // Acesso Restrito (Senha do Admin)
-    brandLogo: document.querySelector('.brand-logo'),
     adminPasswordModal: document.getElementById('admin-password-modal'),
     adminPasswordForm: document.getElementById('admin-password-form'),
     adminPasswordInput: document.getElementById('admin-password-input'),
@@ -108,9 +107,9 @@
 
   // --- INICIALIZAÇÃO ---
   function init() {
-    loadProducts();
     loadCart();
-    checkAdminAccess();
+    if (storeApi.configured) refreshCatalog();
+    else products = prepareProductVisuals(DEFAULT_PRODUCTS);
     populateSourcePresets();
     setupEventListeners();
     renderStoreCatalog();
@@ -126,73 +125,50 @@
   }
 
   // --- ACESSO RESTRITO AO PAINEL ADMIN ---
-  function checkAdminAccess() {
-    const unlocked = localStorage.getItem(STORAGE_KEY_ADMIN_UNLOCKED) === 'true';
-    if (unlocked && elements.btnViewAdmin) {
-      elements.btnViewAdmin.style.display = 'inline-flex';
-    }
-  }
-
   function openPasswordModal() {
-    if (elements.adminPasswordModal) {
-      elements.adminPasswordModal.classList.add('active');
+    if (!elements.adminPasswordModal.open) {
+      elements.adminPasswordModal.showModal();
       if (elements.passwordErrorMsg) elements.passwordErrorMsg.style.display = 'none';
-      setTimeout(() => elements.adminPasswordInput && elements.adminPasswordInput.focus(), 150);
+      document.getElementById('admin-email').focus();
     }
   }
 
   function closePasswordModal() {
     if (elements.adminPasswordModal) {
-      elements.adminPasswordModal.classList.remove('active');
+      elements.adminPasswordModal.close();
       if (elements.adminPasswordForm) elements.adminPasswordForm.reset();
     }
   }
 
-  function handlePasswordSubmit(e) {
+  async function handlePasswordSubmit(e) {
     e.preventDefault();
-    const typed = elements.adminPasswordInput.value.trim();
-
-    if (typed === ADMIN_PASSWORD) {
-      localStorage.setItem(STORAGE_KEY_ADMIN_UNLOCKED, 'true');
-      if (elements.btnViewAdmin) elements.btnViewAdmin.style.display = 'inline-flex';
+    const button = e.submitter;
+    const message = elements.passwordErrorMsg;
+    message.style.display = 'none';
+    button.disabled = true;
+    try {
+      if (!storeApi.configured) throw new Error('not_configured');
+      await storeApi.signIn(document.getElementById('admin-email').value.trim(), elements.adminPasswordInput.value);
+      elements.btnViewAdmin.style.display = 'inline-flex';
       closePasswordModal();
-      showToast('Acesso liberado neste dispositivo! 🔓');
       switchView('admin');
-    } else {
-      if (elements.passwordErrorMsg) elements.passwordErrorMsg.style.display = 'block';
-      const card = document.querySelector('.password-modal-card');
-      if (card) {
-        card.classList.remove('shake');
-        void card.offsetWidth; // reinicia a animação
-        card.classList.add('shake');
-      }
-      elements.adminPasswordInput.value = '';
-      elements.adminPasswordInput.focus();
+    } catch (error) {
+      message.textContent = error.message === 'not_configured'
+        ? 'Conecte a loja ao Supabase para acessar o painel.'
+        : 'Não foi possível entrar. Confira as credenciais e a permissão de acesso.';
+      message.style.display = 'block';
+    } finally {
+      button.disabled = false;
     }
   }
 
   function lockAdminAccess() {
-    localStorage.removeItem(STORAGE_KEY_ADMIN_UNLOCKED);
-    if (elements.btnViewAdmin) elements.btnViewAdmin.style.display = 'none';
+    ++orderRead;
+    orderPage = 0;
+    storeApi.signOut();
+    document.getElementById('order-list').replaceChildren();
+    elements.btnViewAdmin.style.display = 'none';
     switchView('store');
-    showToast('Acesso ao painel trancado neste dispositivo.');
-  }
-
-  function handleSecretLogoClick(e) {
-    // Se o admin já está liberado neste dispositivo, o clique no logo funciona normalmente.
-    if (localStorage.getItem(STORAGE_KEY_ADMIN_UNLOCKED) === 'true') return;
-
-    e.preventDefault();
-    logoClickCount++;
-
-    clearTimeout(logoClickTimer);
-    logoClickTimer = setTimeout(() => { logoClickCount = 0; }, 2500);
-
-    if (logoClickCount >= 5) {
-      logoClickCount = 0;
-      clearTimeout(logoClickTimer);
-      openPasswordModal();
-    }
   }
 
   function handleSecretKeyShortcut(e) {
@@ -210,6 +186,8 @@
     if (elements.mobileNavBackdrop) elements.mobileNavBackdrop.classList.add('active');
     if (elements.btnMobileMenuToggle) {
       elements.btnMobileMenuToggle.setAttribute('aria-expanded', 'true');
+      elements.btnMobileMenuToggle.setAttribute('aria-label', 'Fechar menu');
+      elements.btnMobileMenuToggle.querySelector('.menu-toggle-label').textContent = 'Fechar';
       elements.btnMobileMenuToggle.querySelector('.icon-menu-bars').style.display = 'none';
       elements.btnMobileMenuToggle.querySelector('.icon-menu-close').style.display = 'block';
     }
@@ -222,6 +200,8 @@
     if (elements.mobileNavBackdrop) elements.mobileNavBackdrop.classList.remove('active');
     if (elements.btnMobileMenuToggle) {
       elements.btnMobileMenuToggle.setAttribute('aria-expanded', 'false');
+      elements.btnMobileMenuToggle.setAttribute('aria-label', 'Abrir menu');
+      elements.btnMobileMenuToggle.querySelector('.menu-toggle-label').textContent = 'Menu';
       elements.btnMobileMenuToggle.querySelector('.icon-menu-bars').style.display = 'block';
       elements.btnMobileMenuToggle.querySelector('.icon-menu-close').style.display = 'none';
     }
@@ -236,34 +216,40 @@
     }
   }
 
-  // --- GERENCIAMENTO DE DADOS (LOCALSTORAGE) ---
-  function loadProducts() {
-    try {
-      const saved = localStorage.getItem(STORAGE_KEY_PRODUCTS);
-      if (saved) {
-        products = JSON.parse(saved);
-      } else {
-        products = [...DEFAULT_PRODUCTS];
-        saveProducts();
-      }
-    } catch (e) {
-      console.warn('Erro ao carregar do localStorage. Usando catálogo padrão:', e);
-      products = [...DEFAULT_PRODUCTS];
-    }
+  const hangingImages = Object.fromEntries(['01','02','03','05','06','07','09'].map(n => ['mg-'+n, 'assets/hanging-mg-'+n+'.png']));
+  function prepareProductVisuals(items) {
+    return items.map(product => {
+      const original = DEFAULT_PRODUCTS.find(p => p.id === product.id);
+      const image = original && product.image === original.image && hangingImages[product.id] ? hangingImages[product.id] : product.image;
+      return { ...product, image };
+    });
   }
 
-  function saveProducts() {
+  async function refreshCatalog() {
+    const read = ++catalogRead;
     try {
-      localStorage.setItem(STORAGE_KEY_PRODUCTS, JSON.stringify(products));
-    } catch (e) {
-      console.error('Erro ao salvar produtos:', e);
+      const latest = await storeApi.products();
+      if (read !== catalogRead) return;
+      products = latest;
+      const available = new Map(products.filter(p => p.status === 'disponivel').map(p => [p.id, p]));
+      cart = cart.map(item => available.get(item?.id)).filter(Boolean);
+      saveCart();
+      catalogState = 'ready';
+    } catch {
+      if (read !== catalogRead) return;
+      catalogState = 'error';
     }
+    renderStoreCatalog();
+    renderCart();
+    renderAdminList();
+    renderAdminMetrics();
   }
 
   function loadCart() {
     try {
       const saved = localStorage.getItem(STORAGE_KEY_CART);
-      cart = saved ? JSON.parse(saved) : [];
+      const items = saved ? JSON.parse(saved) : [];
+      cart = Array.isArray(items) ? items.filter(item => item && typeof item.id === "string") : [];
     } catch (e) {
       cart = [];
     }
@@ -280,6 +266,8 @@
   // --- NAVEGAÇÃO ENTRE LOJA E ADMIN ---
   function switchView(viewName) {
     if (viewName === 'admin') {
+      if (!storeApi.isSignedIn()) return openPasswordModal();
+      refreshOrders();
       elements.storeView.style.display = 'none';
       elements.adminView.classList.add('active');
       elements.btnViewAdmin.classList.add('active');
@@ -307,23 +295,23 @@
   };
 
   const CONDITION_LABELS = {
-    'Impecável': 'Impecável',
+    'Impecável': 'Sem sinais de uso',
     'Como Novo': 'Como Novo',
     'Reformado': 'Reformado',
     'Avarias': 'Com Avarias'
   };
 
   function getConditionClass(condition) {
-    return CONDITION_STYLES[condition] || 'condition-como-novo';
+    return (Object.hasOwn(CONDITION_STYLES, condition) && CONDITION_STYLES[condition]) || 'condition-como-novo';
   }
 
   function getConditionLabel(condition) {
-    return CONDITION_LABELS[condition] || condition || '';
+    return (Object.hasOwn(CONDITION_LABELS, condition) && CONDITION_LABELS[condition]) || condition || '';
   }
 
   function renderConditionTag(condition) {
     if (!condition) return '';
-    return `<span class="condition-tag ${getConditionClass(condition)}"><span class="condition-dot"></span>${getConditionLabel(condition)}</span>`;
+    return `<span class="condition-tag ${getConditionClass(condition)}"><span class="condition-dot"></span>${escapeHtml(getConditionLabel(condition))}</span>`;
   }
 
   function clearAllFilters() {
@@ -367,8 +355,25 @@
     });
   }
 
+  function catalogCategory(item) {
+    if (storeApi.configured) return item.category;
+    const title = (item.title || '').toLocaleLowerCase('pt-BR');
+    if (/^saia\b/.test(title)) return 'saias';
+    if (/^calça\b/.test(title)) return 'calcas';
+    if (/^conjunto\b/.test(title)) return 'conjuntos';
+    return item.category;
+  }
+
   // --- RENDERIZAÇÃO DA VITRINE (LOJA) ---
   function renderStoreCatalog() {
+    const status = document.getElementById('catalog-status');
+    status.textContent = {
+      loading: 'Carregando o catálogo…',
+      error: 'O catálogo está indisponível. Tente carregar novamente.',
+      demo: 'Catálogo demonstrativo. Os pedidos serão liberados quando a loja estiver conectada.',
+      ready: ''
+    }[catalogState];
+    document.getElementById('retry-catalog').hidden = catalogState !== 'error';
     if (!elements.productsGrid) return;
 
     updateConditionCounts();
@@ -376,7 +381,7 @@
     // Filtragem
     let filtered = products.filter(item => {
       // Categoria
-      if (activeCategory !== 'todos' && item.category !== activeCategory) return false;
+      if (activeCategory !== 'todos' && catalogCategory(item) !== activeCategory) return false;
       // Tamanho
       if (activeSize !== 'todos' && item.size !== activeSize) return false;
       // Estado
@@ -401,10 +406,13 @@
       filtered.sort((a, b) => b.price - a.price);
     }
 
+    // Keep apparel and accessories in separate, stable groups.
+    filtered.sort((a,b) => Number(catalogCategory(a)==='acessorios') - Number(catalogCategory(b)==='acessorios'));
+
     // Atualiza contador e botão limpar
     const countDisponiveis = filtered.filter(p => p.status !== 'vendido').length;
     if (elements.catalogCounter) {
-      elements.catalogCounter.textContent = `${countDisponiveis} peça${countDisponiveis !== 1 ? 's' : ''} disponível${countDisponiveis !== 1 ? 'is' : ''}`;
+      elements.catalogCounter.textContent = `${countDisponiveis} peça${countDisponiveis !== 1 ? 's' : ''} ${countDisponiveis !== 1 ? 'disponíveis' : 'disponível'}`;
     }
     if (elements.btnClearAllFilters) {
       elements.btnClearAllFilters.hidden = !hasActiveFilters();
@@ -431,26 +439,27 @@
     elements.productsGrid.innerHTML = filtered.map((product, index) => {
       const isSold = product.status === 'vendido';
       const savings = product.originalPrice ? Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100) : 0;
-      const conditionLabel = getConditionLabel(product.condition);
+      const conditionLabel = escapeHtml(getConditionLabel(product.condition));
+      const accessory = catalogCategory(product) === 'acessorios';
+      const newGroup = index === 0 || accessory !== (catalogCategory(filtered[index-1]) === 'acessorios');
+      const groupHeading = newGroup ? `<div class="wardrobe-group-heading"><h3>${accessory ? 'Bolsas & acessórios' : 'Roupas'}</h3><p>${accessory ? 'Os detalhes que acompanham seu jeito de vestir.' : 'Seu próximo achado, peça por peça.'}</p></div>` : '';
+
 
       return `
-        <article class="product-card" data-id="${product.id}" tabindex="0" role="button" aria-label="Ver detalhes de ${product.title}" style="animation-delay: ${Math.min(index * 40, 280)}ms">
+        ${groupHeading}
+        <article class="product-card ${catalogCategory(product) === 'acessorios' ? 'accessory-card' : 'clothing-card'}" data-id="${escapeHtml(product.id)}" tabindex="0" role="button" aria-label="Ver detalhes de ${escapeHtml(product.title)}" style="animation-delay: ${Math.min(index * 40, 280)}ms">
+          ${catalogCategory(product) !== 'acessorios' ? `<div class="rack-hanger" aria-hidden="true"><svg viewBox="0 0 200 72" fill="none"><path d="M100 24v-7c0-10 15-10 15-1 0 5-6 7-10 9l-5 4M100 29 19 60q-5 4 2 5h158q7-1 2-5L100 29Z" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></div>` : '<div class="accessory-shelf-spacer"></div>'}
           <div class="card-media-wrap">
-            <img src="${product.image}" alt="${product.title}" loading="lazy" decoding="async" onerror="this.src='https://images.unsplash.com/photo-1490481651871-ab68de25d43d?auto=format&fit=crop&w=800&q=80'">
-            
+            <img src="${escapeHtml(product.image)}" alt="${escapeHtml(product.title)}" loading="lazy" decoding="async" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1490481651871-ab68de25d43d?auto=format&fit=crop&w=800&q=80'">
+
             <div class="card-badges">
-              ${isSold 
-                ? `<span class="badge-item badge-sold">Esgotado</span>` 
-                : `<span class="badge-item badge-nature">${product.badge || 'Peça Única'}</span>`}
-              ${product.vibe ? `<span class="badge-item badge-vibe">${product.vibe}</span>` : ''}
+              ${isSold
+                ? `<span class="badge-item badge-sold">Esgotado</span>`
+                : `<span class="badge-item badge-nature">${escapeHtml(product.badge || 'Peça Única')}</span>`}
+
             </div>
 
-            ${product.condition ? `
-              <div class="card-condition-badge ${getConditionClass(product.condition)}">
-                <span class="condition-dot"></span>
-                ${conditionLabel}
-              </div>
-            ` : ''}
+
 
             ${isSold ? `
               <div class="sold-stamp-overlay">
@@ -458,11 +467,11 @@
               </div>
             ` : `
               <div class="card-quick-actions">
-                <button class="btn-quick-view" data-action="quick-view" data-id="${product.id}">
+                <button class="btn-quick-view" data-action="quick-view" data-id="${escapeHtml(product.id)}">
                   <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
-                  Espiar Detalhes
+                  Ver a peça
                 </button>
-                <button class="btn-quick-cart" data-action="add-cart" data-id="${product.id}" title="Adicionar à Sacola" aria-label="Adicionar à sacola">
+                <button class="btn-quick-cart" data-action="add-cart" data-id="${escapeHtml(product.id)}" title="Adicionar à Sacola" aria-label="Adicionar à sacola">
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 0 1-8 0"></path></svg>
                 </button>
               </div>
@@ -471,21 +480,21 @@
 
           <div class="card-content">
             <div class="card-brand-row">
-              <span class="card-brand">${product.brand}</span>
-              <span class="card-size-tag">Tam ${product.size}</span>
+              <span class="card-brand">${escapeHtml(product.brand)}</span>
+              <span class="card-size-tag">Tam ${escapeHtml(product.size)}</span>
             </div>
 
-            <h3 class="card-title">${product.title}</h3>
+            <h3 class="card-title">${escapeHtml(product.title)}</h3>
 
             ${product.source ? `
               <div class="card-source-tag">
                 <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 10c0 6-9 13-9 13s-9-7-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
-                Garimpado no <strong>${product.source}</strong>
+                Garimpado no <strong>${escapeHtml(product.source)}</strong>
               </div>
             ` : ''}
 
             <div class="card-details-meta">
-              <span>${product.material || 'Linho / Sarja'}</span>
+              <span>${escapeHtml(product.material || 'Linho / Sarja')}</span>
               <span class="dot"></span>
               ${renderConditionTag(product.condition)}
             </div>
@@ -555,13 +564,13 @@
     const savings = product.originalPrice ? Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100) : 0;
 
     elements.detailModalContent.innerHTML = `
-      <div class="modal-gallery-side">
-        <img src="${product.image}" alt="${product.title}">
-        ${isSold ? `<div class="sold-stamp-overlay"><span class="sold-stamp">Vendido</span></div>` : ''}
+      <div class="modal-gallery-side wardrobe-open ${catalogCategory(product) === 'acessorios' ? 'accessory-view' : ''}">${catalogCategory(product) !== 'acessorios' ? `<div class="rack-hanger" aria-hidden="true"><svg viewBox="0 0 200 72" fill="none"><path d="M100 24v-7c0-10 15-10 15-1 0 5-6 7-10 9l-5 4M100 29 19 60q-5 4 2 5h158q7-1 2-5L100 29Z" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></div>` : ''}<div class="piece-stage" tabindex="0" aria-label="Visualização com profundidade. Arraste ou use as setas para inclinar a foto.">
+        <img src="${escapeHtml(product.image)}" alt="${escapeHtml(product.title)}" draggable="false" decoding="async">
+        ${isSold ? `<div class="sold-stamp-overlay"><span class="sold-stamp">Vendido</span></div>` : ''}</div><label class="piece-zoom">Ampliar <input type="range" min="1" max="1.8" step="0.05" value="1" aria-label="Ampliar foto da peça"></label><p class="piece-view-hint">Arraste para inclinar · use o controle para ampliar</p>
       </div>
       <div class="modal-info-side">
-        <span class="modal-brand-tag">${product.brand}</span>
-        <h2 class="modal-title">${product.title}</h2>
+        <span class="modal-brand-tag">${escapeHtml(product.brand)}</span>
+        <h2 class="modal-title">${escapeHtml(product.title)}</h2>
 
         <div class="modal-price-box">
           <span class="modal-current-price">R$ ${Number(product.price).toFixed(2).replace('.', ',')}</span>
@@ -572,7 +581,7 @@
         <div class="modal-meta-grid">
           <div class="modal-meta-item">
             <small>Tamanho</small>
-            <strong>${product.size}</strong>
+            <strong>${escapeHtml(product.size)}</strong>
           </div>
           <div class="modal-meta-item">
             <small>Estado da Peça</small>
@@ -580,26 +589,26 @@
           </div>
           <div class="modal-meta-item">
             <small>Composição</small>
-            <strong>${product.material || 'Fibras Nobres'}</strong>
+            <strong>${escapeHtml(product.material || 'Fibras Nobres')}</strong>
           </div>
           <div class="modal-meta-item">
             <small>Atmosfera / Vibe</small>
-            <strong>${product.vibe || 'Maresia & Mogno'}</strong>
+            <strong>${escapeHtml(product.vibe || 'Maresia & Mogno')}</strong>
           </div>
           ${product.source ? `
             <div class="modal-meta-item">
               <small>Garimpado em</small>
-              <strong>${product.source}</strong>
+              <strong>${escapeHtml(product.source)}</strong>
             </div>
           ` : ''}
         </div>
 
-        <p class="modal-desc">${product.description || 'Peça única, garimpada com carinho entre os brechós de Aracaju.'}</p>
+        <p class="modal-desc">${escapeHtml(product.description || 'Peça única, garimpada com carinho entre os brechós de Aracaju.')}</p>
 
         ${product.measurements ? `
           <div style="background: var(--c-sand-100); padding: 12px 16px; border-radius: 8px; margin-bottom: 24px; font-size: 0.82rem;">
             <strong style="display: block; margin-bottom: 2px; color: var(--c-charcoal-800);">Medidas Estimadas:</strong>
-            <span style="color: var(--c-charcoal-600);">${product.measurements}</span>
+            <span style="color: var(--c-charcoal-600);">${escapeHtml(product.measurements)}</span>
           </div>
         ` : ''}
 
@@ -618,6 +627,27 @@
       </div>
     `;
 
+    const stage = elements.detailModalContent.querySelector('.piece-stage');
+    const zoom = elements.detailModalContent.querySelector('.piece-zoom input');
+    let angleX = 0, angleY = 0, startPoint = null, scale = 1, pendingPieceFrame = false;
+    const updatePiece = () => {
+      stage.style.animation = 'none';
+      if(pendingPieceFrame)return;
+      pendingPieceFrame = true;
+      requestAnimationFrame(() => {
+        pendingPieceFrame = false;
+        if(!stage.isConnected)return;
+        stage.style.transform = `perspective(900px) translateZ(0) rotateX(${angleX}deg) rotateY(${angleY}deg) scale(${scale})`;
+      });
+    };
+    stage.addEventListener('pointerdown', e => { if(e.pointerType==='mouse' && e.button!==0)return; e.preventDefault(); stage.focus({preventScroll:true}); stage.style.animation = 'none'; startPoint = {x:e.clientX,y:e.clientY,ax:angleX,ay:angleY}; stage.setPointerCapture(e.pointerId); });
+    stage.addEventListener('pointermove', e => { if(!startPoint)return; angleY=Math.max(-24,Math.min(24,startPoint.ay+(e.clientX-startPoint.x)*.15)); angleX=Math.max(-16,Math.min(16,startPoint.ax-(e.clientY-startPoint.y)*.1)); updatePiece(); });
+    stage.addEventListener('pointerup', e => { startPoint=null; if(stage.hasPointerCapture(e.pointerId))stage.releasePointerCapture(e.pointerId); });
+    stage.addEventListener('lostpointercapture', () => {startPoint=null;});
+    stage.addEventListener('dragstart', e => e.preventDefault());
+    stage.addEventListener('pointercancel', () => { startPoint=null; });
+    stage.addEventListener('keydown', e => { if(!['ArrowLeft','ArrowRight','ArrowUp','ArrowDown','Home'].includes(e.key))return; e.preventDefault(); if(e.key==='Home'){angleX=0;angleY=0;}else{angleY=Math.max(-24,Math.min(24,angleY+(e.key==='ArrowRight'?4:e.key==='ArrowLeft'?-4:0)));angleX=Math.max(-16,Math.min(16,angleX+(e.key==='ArrowUp'?4:e.key==='ArrowDown'?-4:0)));}updatePiece(); });
+    zoom.addEventListener('input', () => {scale=Number(zoom.value);updatePiece();});
     const modalAddBtn = document.getElementById('btn-modal-add-cart');
     if (modalAddBtn) {
       modalAddBtn.addEventListener('click', () => {
@@ -645,6 +675,7 @@
   }
 
   function addToCart(productId) {
+    if (checkoutBusy) return;
     const product = products.find(p => p.id === productId);
     if (!product) return;
 
@@ -669,6 +700,7 @@
   }
 
   function removeFromCart(productId) {
+    if (checkoutBusy) return;
     cart = cart.filter(item => item.id !== productId);
     saveCart();
     renderCart();
@@ -683,6 +715,10 @@
     }
 
     if (!elements.cartItemsBody) return;
+    document.getElementById('checkout-notice').textContent = storeApi.whatsapp || !storeApi.configured
+      ? 'Registre o pedido e combine pagamento e entrega pelo WhatsApp.'
+      : 'A loja ainda precisa configurar o contato do WhatsApp.';
+    elements.btnWhatsappCheckout.disabled = checkoutBusy || !cart.length || catalogState !== 'ready' || !storeApi.whatsapp;
 
     if (cart.length === 0) {
       elements.cartItemsBody.innerHTML = `
@@ -697,11 +733,6 @@
         </div>
       `;
       if (elements.cartSubtotal) elements.cartSubtotal.textContent = 'R$ 0,00';
-      if (elements.btnWhatsappCheckout) {
-        elements.btnWhatsappCheckout.disabled = true;
-        elements.btnWhatsappCheckout.style.opacity = '0.5';
-        elements.btnWhatsappCheckout.style.pointerEvents = 'none';
-      }
       return;
     }
 
@@ -711,22 +742,17 @@
       elements.cartSubtotal.textContent = `R$ ${subtotal.toFixed(2).replace('.', ',')}`;
     }
 
-    if (elements.btnWhatsappCheckout) {
-      elements.btnWhatsappCheckout.disabled = false;
-      elements.btnWhatsappCheckout.style.opacity = '1';
-      elements.btnWhatsappCheckout.style.pointerEvents = 'auto';
-    }
 
     // Renderiza itens
     elements.cartItemsBody.innerHTML = cart.map(item => `
-      <div class="cart-item-row" data-id="${item.id}">
-        <img src="${item.image}" alt="${item.title}" class="cart-item-img">
+      <div class="cart-item-row" data-id="${escapeHtml(item.id)}">
+        <img src="${escapeHtml(item.image)}" alt="${escapeHtml(item.title)}" class="cart-item-img">
         <div class="cart-item-details">
-          <h4 class="cart-item-name">${item.title}</h4>
-          <div class="cart-item-meta">${item.brand} • Tam ${item.size}</div>
+          <h4 class="cart-item-name">${escapeHtml(item.title)}</h4>
+          <div class="cart-item-meta">${escapeHtml(item.brand)} • Tam ${escapeHtml(item.size)}</div>
           <div class="cart-item-price">R$ ${Number(item.price).toFixed(2).replace('.', ',')}</div>
         </div>
-        <button class="btn-remove-cart" data-action="remove-item" data-id="${item.id}" title="Remover da sacola">
+        <button class="btn-remove-cart" data-action="remove-item" data-id="${escapeHtml(item.id)}" title="Remover da sacola">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
         </button>
       </div>
@@ -737,16 +763,138 @@
     });
   }
 
-  function checkoutViaWhatsApp() {
-    if (cart.length === 0) return;
+  async function checkoutViaWhatsApp() {
+    if (!cart.length || catalogState !== 'ready' || !storeApi.whatsapp) return;
+    const button = elements.btnWhatsappCheckout;
+    if (checkoutBusy || button.disabled) return;
+    if (cart.length > 30) {
+      document.getElementById('checkout-status').textContent = 'Registre até 30 peças por pedido.';
+      return;
+    }
+    const status = document.getElementById('checkout-status');
+    const link = document.getElementById('order-whatsapp');
+    const ids = cart.map(item => item.id).sort();
+    const subtotal = cart.reduce((sum, item) => sum + Math.round(Number(item.price) * 100), 0) / 100;
+    const signature = JSON.stringify([ids, subtotal]);
+    if (!pendingCheckout) {
+      try {
+        pendingCheckout = JSON.parse(sessionStorage.getItem('mogno-pending-order'));
+      } catch {
+        pendingCheckout = null;
+      }
+    }
+    if (pendingCheckout?.signature !== signature || !/^[a-f0-9-]{36}$/.test(pendingCheckout.id)) {
+      pendingCheckout = { signature, id: crypto.randomUUID() };
+    }
+    try {
+      sessionStorage.setItem('mogno-pending-order', JSON.stringify(pendingCheckout));
+    } catch {
+      // The current tab can still retry using the in-memory order ID.
+    }
+    checkoutBusy = true;
+    button.disabled = true;
+    status.textContent = 'Registrando pedido…';
+    link.hidden = true;
+    try {
+      const order = await storeApi.requestOrder(pendingCheckout.id, ids, subtotal);
+      const message = [
+        'Olá, Mogno Brechó! Gostaria de combinar o pagamento e a entrega.',
+        'Pedido ' + order.id,
+        ...order.items.map(item => '• ' + item.title + ' (' + item.size + ') — ' + money.format(item.price)),
+        'Total das peças: ' + money.format(order.total)
+      ].join('\n');
+      link.href = 'https://wa.me/' + storeApi.whatsapp + '?text=' + encodeURIComponent(message);
+      link.hidden = false;
+      status.textContent = 'Pedido registrado. Envie o número pelo WhatsApp para confirmar a disponibilidade.';
+      pendingCheckout = null;
+      try {
+        sessionStorage.removeItem('mogno-pending-order');
+      } catch {
+        // The order is already registered.
+      }
+      cart = cart.filter(item => !ids.includes(item.id));
+      saveCart();
+      renderCart();
+      if (elements.cartDrawerOverlay.classList.contains('active')) link.focus();
+    } catch (error) {
+      if (['stock_changed', 'price_changed'].includes(error.message)) {
+        await refreshCatalog();
+        status.textContent = 'O estoque ou o preço mudou. Confira a sacola antes de tentar novamente.';
+      } else {
+        status.textContent = 'Não foi possível confirmar o registro. Tente novamente.';
+      }
+    } finally {
+      checkoutBusy = false;
+      button.disabled = !cart.length || catalogState !== 'ready' || !storeApi.whatsapp;
+    }
+  }
 
-    const subtotal = cart.reduce((sum, item) => sum + Number(item.price), 0);
-    let itemsText = cart.map(item => `• ${item.title} (Tam ${item.size}) - R$ ${Number(item.price).toFixed(2).replace('.', ',')}`).join('\n');
+  async function refreshOrders() {
+    const read = ++orderRead;
+    const list = document.getElementById('order-list');
+    const previous = document.getElementById('previous-orders');
+    const next = document.getElementById('next-orders');
+    previous.disabled = next.disabled = true;
+    list.textContent = 'Carregando pedidos…';
+    try {
+      const orders = await storeApi.orders(orderPage);
+      if (read !== orderRead || !storeApi.isSignedIn()) return;
+      if (!orders.length && orderPage > 0) {
+        orderPage--;
+        return refreshOrders();
+      }
+      previous.disabled = orderPage === 0;
+      next.disabled = orders.length <= 10;
+      list.innerHTML = orders.slice(0, 10).map(order => `
+        <article class="admin-item-card store-order">
+          <div>
+            <strong>Pedido ${escapeHtml(order.id)}</strong>
+            <p>${order.items.map(item => escapeHtml(item.title)).join(', ')}</p>
+            <p>${money.format(order.total)}</p>
+          </div>
+          <div class="admin-item-actions">
+            <button class="btn-admin-action" data-sell="true" data-order="${escapeHtml(order.id)}">Confirmar venda</button>
+            <button class="btn-admin-action" data-sell="false" data-order="${escapeHtml(order.id)}">Cancelar pedido</button>
+          </div>
+        </article>`).join('') || 'Nenhum pedido pendente.';
+    } catch {
+      if (read !== orderRead) return;
+      list.textContent = storeApi.isSignedIn() ? 'Não foi possível carregar os pedidos.' : 'Entre novamente para consultar os pedidos.';
+    }
+  }
 
-    const msg = `Olá, Mogno Brechó! 🌿☀️\n\nAdorei o acervo e gostaria de reservar as seguintes peças:\n\n${itemsText}\n\n*Total:* R$ ${subtotal.toFixed(2).replace('.', ',')}\n\nComo combinamos o pagamento e o envio?`;
-    const encoded = encodeURIComponent(msg);
-    const waUrl = `https://api.whatsapp.com/send?phone=${WHATSAPP_NUMBER}&text=${encoded}`;
-    window.open(waUrl, '_blank');
+  function confirmAction(message, action, label) {
+    const dialog = document.getElementById('store-confirm');
+    dialog.querySelector('p').textContent = message;
+    const button = dialog.querySelector('[value="accept"]');
+    button.textContent = label;
+    dialog.returnValue = '';
+    dialog.addEventListener('close', () => {
+      if (dialog.returnValue === 'accept') action();
+    }, { once: true });
+    dialog.showModal();
+  }
+
+  async function adminMutation(action, success) {
+    try {
+      await action();
+      showToast(success);
+      await refreshCatalog();
+      return true;
+    } catch (error) {
+      if (!storeApi.isSignedIn()) {
+        lockAdminAccess();
+        openPasswordModal();
+      }
+      if (error.message === 'stale_product') await refreshCatalog();
+      showToast(error.message === 'stale_product'
+        ? 'A peça mudou em outra sessão. Confira o catálogo e tente novamente.'
+        : error.message === 'stock_changed'
+        ? 'Uma peça já foi vendida ou removida. Confira o pedido.'
+        : error.message === 'invalid_image' ? 'Escolha JPG, PNG ou WebP de até 5 MB.'
+        : 'Não foi possível salvar a alteração. Tente novamente.', 'warning');
+      return false;
+    }
   }
 
   // --- PAINEL DE ADMINISTRAÇÃO (CRUD & MÉTRICAS) ---
@@ -788,20 +936,20 @@
     elements.adminItemsList.innerHTML = items.map(product => {
       const isSold = product.status === 'vendido';
       return `
-        <div class="admin-item-card" data-id="${product.id}">
+        <div class="admin-item-card" data-id="${escapeHtml(product.id)}">
           <div class="admin-item-left">
-            <img src="${product.image}" alt="${product.title}" class="admin-item-thumb" onerror="this.src='https://images.unsplash.com/photo-1490481651871-ab68de25d43d?auto=format&fit=crop&w=300&q=80'">
+            <img src="${escapeHtml(product.image)}" alt="${escapeHtml(product.title)}" class="admin-item-thumb" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1490481651871-ab68de25d43d?auto=format&fit=crop&w=300&q=80'">
             <div class="admin-item-info">
-              <h4 class="admin-item-title">${product.title}</h4>
+              <h4 class="admin-item-title">${escapeHtml(product.title)}</h4>
               <div class="admin-item-tags">
                 <span class="status-pill ${isSold ? 'status-sold' : 'status-available'}">
                   ${isSold ? 'Vendido' : 'Disponível'}
                 </span>
-                <span>Tam: <strong>${product.size}</strong></span>
+                <span>Tam: <strong>${escapeHtml(product.size)}</strong></span>
                 <span>•</span>
-                <span>${product.brand}</span>
+                <span>${escapeHtml(product.brand)}</span>
                 <span>•</span>
-                <span>${product.category}</span>
+                <span>${escapeHtml(product.category)}</span>
               </div>
             </div>
           </div>
@@ -812,23 +960,23 @@
 
           <div class="admin-item-actions">
             ${isSold ? `
-              <button class="btn-admin-action btn-toggle-available" data-action="toggle-status" data-id="${product.id}" title="Reativar peça na vitrine">
+              <button class="btn-admin-action btn-toggle-available" data-action="toggle-status" data-id="${escapeHtml(product.id)}" title="Reativar peça na vitrine">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
                 Tornar Disponível
               </button>
             ` : `
-              <button class="btn-admin-action btn-toggle-sold" data-action="toggle-status" data-id="${product.id}" title="Marcar como vendido">
+              <button class="btn-admin-action btn-toggle-sold" data-action="toggle-status" data-id="${escapeHtml(product.id)}" title="Marcar como vendido">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
                 Marcar Vendida
               </button>
             `}
 
-            <button class="btn-admin-action btn-edit-item" data-action="edit-item" data-id="${product.id}" title="Editar informações">
+            <button class="btn-admin-action btn-edit-item" data-action="edit-item" data-id="${escapeHtml(product.id)}" title="Editar informações">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
               Editar
             </button>
 
-            <button class="btn-admin-action btn-delete-item" data-action="delete-item" data-id="${product.id}" title="Remover do catálogo">
+            <button class="btn-admin-action btn-delete-item" data-action="delete-item" data-id="${escapeHtml(product.id)}" title="Remover do catálogo">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
             </button>
           </div>
@@ -854,46 +1002,22 @@
   function toggleProductStatus(productId) {
     const product = products.find(p => p.id === productId);
     if (!product) return;
-
-    if (product.status === 'vendido') {
-      product.status = 'disponivel';
-      showToast(`Peça "${product.title}" agora está DISPONÍVEL!`);
-    } else {
-      product.status = 'vendido';
-      // Se estava no carrinho, remove para evitar inconsistência
-      cart = cart.filter(item => item.id !== productId);
-      saveCart();
-      renderCart();
-      showToast(`Peça "${product.title}" marcada como VENDIDA!`, 'info');
-    }
-
-    saveProducts();
-    renderAdminMetrics();
-    renderAdminList();
-    renderStoreCatalog();
+    const status = product.status === 'vendido' ? 'disponivel' : 'vendido';
+    adminMutation(async () => {
+      if (!(await storeApi.updateProduct(productId, { status }, product.updated_at)).length) throw new Error('stale_product');
+    }, 'Status da peça atualizado.');
   }
 
-  // Deletar peça
   function deleteProduct(productId) {
     const product = products.find(p => p.id === productId);
     if (!product) return;
-
-    const confirmed = confirm(`Tem certeza que deseja remover permanentemente a peça "${product.title}" do acervo?`);
-    if (!confirmed) return;
-
-    products = products.filter(p => p.id !== productId);
-    cart = cart.filter(item => item.id !== productId);
-    saveProducts();
-    saveCart();
-    renderAdminMetrics();
-    renderAdminList();
-    renderStoreCatalog();
-    renderCart();
-    showToast(`Peça removida com sucesso!`);
+    confirmAction('Remover “' + product.title + '” do catálogo?', () => adminMutation(async () => {
+      if (!(await storeApi.deleteProduct(productId, product.updated_at)).length) throw new Error('stale_product');
+    }, 'Peça removida.'), 'Remover peça');
   }
 
   // Adicionar Nova Peça (Form Admin)
-  function handleAddProductSubmit(e) {
+  async function handleAddProductSubmit(e) {
     e.preventDefault();
 
     const title = document.getElementById('prod-title').value.trim();
@@ -917,7 +1041,7 @@
     }
 
     const newProduct = {
-      id: 'mg-' + Date.now().toString(36),
+      id: crypto.randomUUID(),
       title,
       category,
       brand,
@@ -935,18 +1059,23 @@
       vibe
     };
 
-    // Adiciona ao topo
-    products.unshift(newProduct);
-    saveProducts();
-
-    // Reset formulário
-    elements.adminForm.reset();
-    showToast(`Nova roupa "${newProduct.title}" cadastrada na vitrine!`);
-
-    // Atualiza views
-    renderAdminMetrics();
-    renderAdminList();
-    renderStoreCatalog();
+    const button = e.submitter;
+    const file = elements.imageFileInput.files[0];
+    button.disabled = true;
+    try {
+      if (image && !image.startsWith('https://')) {
+        showToast('Use uma URL de foto começando com https://.', 'warning');
+        elements.imageUrlInput.focus();
+        return;
+      }
+      const saved = await adminMutation(async () => {
+        if (file && !elements.imageUrlInput.value) newProduct.image = await storeApi.uploadImage(file);
+        await storeApi.createProduct(newProduct);
+      }, 'Peça cadastrada na vitrine.');
+      if (saved) elements.adminForm.reset();
+    } finally {
+      button.disabled = false;
+    }
   }
 
   // Modal de Edição (Admin)
@@ -954,7 +1083,7 @@
     const product = products.find(p => p.id === productId);
     if (!product) return;
 
-    currentEditingId = productId;
+    editingProduct = product;
 
     document.getElementById('edit-prod-title').value = product.title || '';
     document.getElementById('edit-prod-category').value = product.category || 'vestidos';
@@ -975,17 +1104,15 @@
   }
 
   function closeEditModal() {
-    currentEditingId = null;
+    editingProduct = null;
     elements.editModalBackdrop.classList.remove('active');
   }
 
-  function handleEditProductSubmit(e) {
+  async function handleEditProductSubmit(e) {
     e.preventDefault();
-    if (!currentEditingId) return;
-
-    const product = products.find(p => p.id === currentEditingId);
-    if (!product) return;
-
+    const existing = editingProduct;
+    if (!existing) return;
+    const product = {};
     product.title = document.getElementById('edit-prod-title').value.trim();
     product.category = document.getElementById('edit-prod-category').value;
     product.size = document.getElementById('edit-prod-size').value;
@@ -997,17 +1124,26 @@
     product.status = document.getElementById('edit-prod-status').value;
     product.source = document.getElementById('edit-prod-source').value.trim();
     product.vibe = document.getElementById('edit-prod-vibe').value.trim();
-    product.image = document.getElementById('edit-prod-image-url').value.trim() || product.image;
+    const imageInput = document.getElementById('edit-prod-image-url');
+    product.image = imageInput.value.trim() || existing.image;
+    if (!product.image.startsWith('https://')) {
+      showToast('Use uma URL de foto começando com https://.', 'warning');
+      imageInput.focus();
+      return;
+    }
     product.description = document.getElementById('edit-prod-desc').value.trim();
     product.measurements = document.getElementById('edit-prod-measurements').value.trim();
 
-    saveProducts();
-    closeEditModal();
-    showToast(`Peça "${product.title}" atualizada com sucesso!`);
-
-    renderAdminMetrics();
-    renderAdminList();
-    renderStoreCatalog();
+    const button = e.submitter;
+    button.disabled = true;
+    try {
+      const saved = await adminMutation(async () => {
+        if (!(await storeApi.updateProduct(existing.id, product, existing.updated_at)).length) throw new Error('stale_product');
+      }, 'Peça atualizada.');
+      if (saved && editingProduct === existing) closeEditModal();
+    } finally {
+      button.disabled = false;
+    }
   }
 
   // --- TOAST NOTIFICATIONS ---
@@ -1034,7 +1170,7 @@
       `;
     }
 
-    toast.innerHTML = `${iconSvg}<span>${message}</span>`;
+    toast.innerHTML = `${iconSvg}<span>${escapeHtml(message)}</span>`;
     elements.toastContainer.appendChild(toast);
 
     setTimeout(() => {
@@ -1055,9 +1191,32 @@
       elements.btnViewAdmin.addEventListener('click', () => switchView('admin'));
     }
 
-    // Acesso Restrito: 5 cliques no logo OU Ctrl/Cmd+Alt+M abrem a senha
-    if (elements.brandLogo) {
-      elements.brandLogo.addEventListener('click', handleSecretLogoClick);
+    document.getElementById('admin-login').addEventListener('click', () => switchView('admin'));
+    document.getElementById('retry-catalog').addEventListener('click', refreshCatalog);
+    document.getElementById('refresh-orders').addEventListener('click', refreshOrders);
+    document.getElementById('previous-orders').addEventListener('click', () => {
+      orderPage--;
+      refreshOrders();
+    });
+    document.getElementById('next-orders').addEventListener('click', () => {
+      orderPage++;
+      refreshOrders();
+    });
+    document.getElementById('order-list').addEventListener('click', e => {
+      const button = e.target.closest('[data-order]');
+      if (!button) return;
+      const sell = button.dataset.sell === 'true';
+      const label = sell ? 'Confirmar venda' : 'Cancelar pedido';
+      confirmAction(sell ? 'Confirmar a venda e retirar as peças da disponibilidade?' : 'Cancelar este pedido pendente?', async () => {
+        button.disabled = true;
+        await adminMutation(() => storeApi.resolveOrder(button.dataset.order, sell), sell ? 'Venda confirmada.' : 'Pedido cancelado.');
+        if (storeApi.isSignedIn()) refreshOrders();
+      }, label);
+    });
+    const contact = document.getElementById('store-contact');
+    if (storeApi.whatsapp) {
+      contact.href = 'https://wa.me/' + storeApi.whatsapp;
+      contact.hidden = false;
     }
     document.addEventListener('keydown', handleSecretKeyShortcut);
 
@@ -1067,11 +1226,7 @@
     if (elements.btnClosePasswordModal) {
       elements.btnClosePasswordModal.addEventListener('click', closePasswordModal);
     }
-    if (elements.adminPasswordModal) {
-      elements.adminPasswordModal.addEventListener('click', (e) => {
-        if (e.target === elements.adminPasswordModal) closePasswordModal();
-      });
-    }
+    elements.adminPasswordModal.addEventListener('close', () => elements.adminPasswordForm.reset());
     if (elements.btnLockAdmin) {
       elements.btnLockAdmin.addEventListener('click', lockAdminAccess);
     }
@@ -1237,38 +1392,6 @@
       });
     });
 
-    // Admin - Upload de imagem local (FileReader)
-    if (elements.imageFileInput) {
-      elements.imageFileInput.addEventListener('change', (e) => {
-        const file = e.target.files[0];
-        if (file) {
-          const reader = new FileReader();
-          reader.onload = (event) => {
-            if (elements.imageUrlInput) {
-              elements.imageUrlInput.value = event.target.result;
-              showToast('Foto carregada do dispositivo!');
-            }
-          };
-          reader.readAsDataURL(file);
-        }
-      });
-    }
-
-    // Admin - Restaurar Catálogo Inicial
-    if (elements.btnResetCatalog) {
-      elements.btnResetCatalog.addEventListener('click', () => {
-        const ok = confirm('Deseja restaurar o acervo com a curadoria original de peças?');
-        if (ok) {
-          products = JSON.parse(JSON.stringify(DEFAULT_PRODUCTS));
-          saveProducts();
-          renderAdminMetrics();
-          renderAdminList();
-          renderStoreCatalog();
-          showToast('Catálogo padrão restaurado com sucesso!');
-        }
-      });
-    }
-
     // Modal de Edição (Admin)
     if (elements.btnCloseEditModal) {
       elements.btnCloseEditModal.addEventListener('click', closeEditModal);
@@ -1284,7 +1407,7 @@
 
     // Fechar modais ao teclar ESC
     window.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape') {
+      if (e.key === 'Escape' && !document.querySelector('dialog[open]')) {
         closeCart();
         closeDetailModal();
         closeEditModal();

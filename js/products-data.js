@@ -1,7 +1,7 @@
 /**
  * Catálogo Inicial do Mogno Brechó
  * ---------------------------------------------------------------------
- * O Mogno não é um brechó de dono só — é o garimpo de Lucas, universitário
+ * O Mogno não é um brechó de dono só, é o garimpo de Lucas, universitário
  * de Aracaju que visita brechós, feiras e bazares por toda a cidade
  * (Centro, Atalaia, Jardins, Farolândia, Coqueiral...) em busca de peças
  * com alma. Por isso cada item guarda também onde foi encontrado (`source`).
@@ -80,7 +80,7 @@ const DEFAULT_PRODUCTS = [
     status: "disponivel",
     badge: "Artesanato Local",
     image: "https://images.unsplash.com/photo-1548036328-c9fa89d128fa?auto=format&fit=crop&w=1000&q=80",
-    description: "Trama manual trançada por artesãs litorâneas, alça reforçada em couro legítimo vegetal. Chegou com etiqueta original ainda presa — nunca foi usada. O acessório definitivo para transportar essenciais com leveza praiana e sofisticação.",
+    description: "Trama manual trançada por artesãs litorâneas, alça reforçada em couro legítimo vegetal. Chegou com etiqueta original ainda presa e nunca foi usada. O acessório definitivo para transportar essenciais com leveza praiana e sofisticação.",
     measurements: "Largura: 32cm | Altura: 28cm | Profundidade: 12cm",
     vibe: "Natural & Orgânico"
   },
@@ -152,7 +152,7 @@ const DEFAULT_PRODUCTS = [
     status: "disponivel",
     badge: "Vintage Genuíno",
     image: "https://images.unsplash.com/photo-1511499767150-a48a237f0083?auto=format&fit=crop&w=1000&q=80",
-    description: "Óculos de sol autêntico anos 90 garimpado em Florença. Passou por reforço profissional na dobradiça antes de chegar até você — hoje abre e fecha perfeitamente. Lentes âmbar degradê com proteção UV400 completa e detalhes em filigrana dourada.",
+    description: "Óculos de sol autêntico anos 90 garimpado em Florença. Passou por reforço profissional na dobradiça antes de chegar até você. Hoje abre e fecha perfeitamente. Lentes âmbar degradê com proteção UV400 completa e detalhes em filigrana dourada.",
     measurements: "Largura frontal: 14cm | Ponte: 1.8cm",
     vibe: "Retro Chic"
   },
@@ -170,7 +170,7 @@ const DEFAULT_PRODUCTS = [
     status: "disponivel",
     badge: "Preço Honesto",
     image: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=1000&q=80",
-    description: "Blazer cropped de alfaiataria em terracota queimado, ombro estruturado e botões em resina. Transparência total: tem um pequeno reparo (quase invisível) no forro interno e uma leve descoloração na barra da manga esquerda — nada que atrapalhe o uso, só reduz bastante o preço.",
+    description: "Blazer cropped de alfaiataria em terracota queimado, ombro estruturado e botões em resina. Transparência total: tem um pequeno reparo (quase invisível) no forro interno e uma leve descoloração na barra da manga esquerda. Nada que atrapalhe o uso, só reduz bastante o preço.",
     measurements: "Ombro a ombro: 40cm | Comprimento: 48cm",
     vibe: "Elegância Minimalista"
   }

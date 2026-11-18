@@ -3114,3 +3114,77 @@ input, select, textarea {
     flex-wrap: wrap;
   }
 }
+
+/* Pedidos e acesso à loja */
+.store-status {
+  color: var(--c-charcoal-700);
+  font-size: 0.875rem;
+  margin-block: 0.5rem;
+}
+
+.store-status:empty,
+[hidden] {
+  display: none !important;
+}
+
+.store-orders {
+  background: var(--c-white);
+  border-radius: var(--radius-md);
+  padding: clamp(1rem, 3vw, 1.5rem);
+  margin-block: 1.5rem;
+}
+
+.store-order {
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  overflow-wrap: anywhere;
+}
+
+.store-dialog {
+  position: fixed;
+  inset: 0;
+  margin: auto;
+  border: 0;
+  padding: 0;
+  border-radius: var(--radius-lg);
+  background: var(--c-white);
+  width: min(26rem, calc(100% - 2rem));
+  max-height: calc(100% - 2rem);
+  color: var(--c-charcoal-900);
+}
+
+.store-dialog::backdrop {
+  background: rgb(27 21 18 / 65%);
+}
+
+.store-dialog .form-label {
+  text-align: left;
+  margin-top: 0.75rem;
+}
+
+.btn-whatsapp-checkout:disabled,
+.store-dialog button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+#admin-login:focus-visible,
+.store-orders button:focus-visible,
+.store-dialog :focus-visible,
+#order-whatsapp:focus-visible {
+  outline: 2px solid var(--c-magno-light);
+  outline-offset: 3px;
+}
+
+.store-order-pagination {
+  margin-top: 0.75rem;
+}
+
+.store-orders button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.store-dialog .password-modal-card {
+  max-width: none;
+}
